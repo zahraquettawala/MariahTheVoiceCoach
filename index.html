@@ -21,6 +21,9 @@
     -webkit-user-select: none; user-select: none;
   }
   main { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 16px; }
+  nav { text-align: center; color: var(--muted); font-size: 15px; margin-top: 4px; }
+  nav span { color: var(--text); font-weight: 600; }
+  nav a { color: var(--accent); text-decoration: none; font-weight: 600; }
   h1 { font-size: 18px; font-weight: 600; margin: 4px 0 0; color: var(--muted); text-align: center; }
   .note { text-align: center; margin-top: 8px; }
   .note .name { font-size: 104px; font-weight: 700; line-height: 1; letter-spacing: -2px; }
@@ -51,7 +54,7 @@
 </head>
 <body>
 <main>
-  <h1>Pitch Test</h1>
+  <nav><span>Pitch test</span> · <a href="warmup.html">Warmup →</a></nav>
 
   <div class="target">
     <span class="label">Match</span>
@@ -88,6 +91,7 @@
 
 <script type="module">
   import { PitchDetector } from "https://cdn.jsdelivr.net/npm/pitchy@4.1.0/+esm";
+  import { createPiano } from "./piano.js";
 
   const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
   const IN_TUNE_CENTS = 25;    // within this many cents counts as "on it"
@@ -101,7 +105,7 @@
         needle = $("needle"), button = $("start"), errorEl = $("error"),
         canvas = $("trace"), ctx = canvas.getContext("2d");
 
-  let audioCtx, source, stream, analyser, detector, buffer, rafId, wakeLock;
+  let piano, audioCtx, source, stream, analyser, detector, buffer, rafId, wakeLock;
   let smoothedMidi = null;
   let targetMidi = 60; // C4
   try { targetMidi = Number(localStorage.getItem("targetMidi")) || 60; } catch {}
@@ -135,25 +139,11 @@
 
   async function playNote() {
     await ensureAudio();
-    const t = audioCtx.currentTime, dur = 1.5;
-    const hz = 440 * 2 ** ((targetMidi - 69) / 12);
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.35, t + 0.03);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
-    gain.connect(audioCtx.destination);
-    // A soft, piano-ish tone: the note plus a quieter octave above
-    for (const [mult, level] of [[1, 1], [2, 0.3]]) {
-      const osc = audioCtx.createOscillator();
-      const g = audioCtx.createGain();
-      osc.type = "triangle";
-      osc.frequency.value = hz * mult;
-      g.gain.value = level;
-      osc.connect(g).connect(gain);
-      osc.start(t);
-      osc.stop(t + dur);
-    }
-    playingUntil = performance.now() + dur * 1000 + 150;
+    piano ??= createPiano(audioCtx);
+    const dur = 1.5;
+    await piano.preload([targetMidi]);
+    piano.play(targetMidi, audioCtx.currentTime + 0.02, dur);
+    playingUntil = performance.now() + dur * 1000 + 400;
   }
 
   async function start() {

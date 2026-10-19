@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#111318">
+<title>Agility Warmup</title>
+<style>
+  :root {
+    --bg: #111318; --panel: #1b1e26; --panel2: #2a2e39; --text: #f2f3f5; --muted: #9aa0ab;
+    --low: #f0a43c; --ok: #3ccf7f; --high: #e8615a; --accent: #8b7cf6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    -webkit-user-select: none; user-select: none;
+  }
+  main { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 14px; }
+  nav { text-align: center; color: var(--muted); font-size: 15px; margin-top: 4px; }
+  nav span { color: var(--text); font-weight: 600; }
+  nav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  button { font: inherit; color: var(--text); border: 0; cursor: pointer; }
+  .controls { background: var(--panel); border-radius: 14px; padding: 6px 10px; display: flex; flex-direction: column; }
+  .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+  .row + .row { border-top: 1px solid rgba(255,255,255,.06); }
+  .row .label { color: var(--muted); font-size: 14px; flex: 1; }
+  .row .value { font-size: 20px; font-weight: 700; min-width: 76px; text-align: center; font-variant-numeric: tabular-nums; }
+  .step { font-size: 22px; width: 46px; padding: 8px 0; background: var(--panel2); border-radius: 12px; }
+  .patterns { display: flex; gap: 6px; flex-wrap: wrap; padding: 8px 0 6px; }
+  .patterns button { flex: 1 1 30%; font-size: 14px; padding: 10px 6px; background: var(--panel2); border-radius: 10px; }
+  .patterns button[aria-pressed="true"] { background: var(--accent); color: #fff; font-weight: 600; }
+  .phase { text-align: center; font-size: 28px; font-weight: 700; min-height: 36px; }
+  .sub { text-align: center; color: var(--muted); font-size: 15px; min-height: 20px; margin-top: -8px; }
+  .dots { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+  .dot { width: 36px; text-align: center; }
+  .dot .ball { width: 30px; height: 30px; margin: 0 auto; border-radius: 50%; background: var(--panel2); transition: transform 80ms, background 120ms; }
+  .dot .nm { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .dot .ct { font-size: 11px; color: var(--muted); min-height: 14px; font-variant-numeric: tabular-nums; }
+  .dot.now .ball { transform: scale(1.25); background: var(--accent); }
+  .dot.ok .ball { background: var(--ok); }
+  .dot.low .ball { background: var(--low); }
+  .dot.high .ball { background: var(--high); }
+  .dot.miss .ball { background: transparent; border: 2px dashed var(--muted); }
+  .live { text-align: center; font-size: 15px; color: var(--muted); min-height: 20px; }
+  .go { font-size: 22px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 16px; padding: 20px; width: 100%; }
+  .go:disabled { opacity: .5; }
+  .after { display: flex; gap: 8px; }
+  .after button { flex: 1; font-size: 16px; font-weight: 600; padding: 14px 6px; background: var(--panel2); border-radius: 12px; }
+  .legend { display: flex; justify-content: center; gap: 14px; color: var(--muted); font-size: 12px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+  .tips { background: var(--panel); border-radius: 14px; padding: 14px 16px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .tips b { color: var(--text); }
+  .error { color: var(--high); text-align: center; font-size: 15px; }
+</style>
+</head>
+<body>
+<main>
+  <nav><a href="./">← Pitch test</a> · <span>Warmup</span></nav>
+
+  <div class="controls">
+    <div class="patterns" id="patterns"></div>
+    <div class="row">
+      <span class="label">Starting note</span>
+      <button class="step" id="keyDown" aria-label="Lower">−</button>
+      <span class="value" id="keyVal">C4</span>
+      <button class="step" id="keyUp" aria-label="Higher">+</button>
+    </div>
+    <div class="row">
+      <span class="label">Speed (bpm)</span>
+      <button class="step" id="bpmDown" aria-label="Slower">−</button>
+      <span class="value" id="bpmVal">100</span>
+      <button class="step" id="bpmUp" aria-label="Faster">+</button>
+    </div>
+  </div>
+
+  <div class="phase" id="phase">Ready when you are</div>
+  <div class="sub" id="sub">The piano plays the pattern, then you sing it back</div>
+
+  <div class="dots" id="dots"></div>
+  <div class="legend"><span><i style="background:var(--ok)"></i>on pitch</span><span><i style="background:var(--low)"></i>low</span><span><i style="background:var(--high)"></i>high</span><span><i style="border:1.5px dashed var(--muted)"></i>missed</span></div>
+  <div class="live" id="live"></div>
+
+  <div class="error" id="error"></div>
+  <button class="go" id="go">Start round</button>
+  <div class="after" id="after" hidden>
+    <button id="again">Again</button>
+    <button id="downStep">↓ Half step</button>
+    <button id="upStep">↑ Half step</button>
+  </div>
+
+  <div class="tips">
+    <b>How it works:</b> listen to the piano, then sing the same notes back, one per highlighted dot. Each dot turns green when you hit it within 25 cents. Any octave counts. No sound? Check the silent switch on your phone. Nothing is recorded or saved.
+  </div>
+</main>
+
+<script type="module">
+  import { PitchDetector } from "https://cdn.jsdelivr.net/npm/pitchy@4.1.0/+esm";
+  import { createPiano } from "./piano.js";
+
+  const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
+  // Steps above the starting note, in semitones
+  const PATTERNS = {
+    scale: { name: "5-note scale", steps: [0, 2, 4, 5, 7, 5, 4, 2, 0] },
+    arpeggio: { name: "Arpeggio", steps: [0, 4, 7, 12, 7, 4, 0] },
+    runs: { name: "Little runs", steps: [0, 2, 4, 2, 0, 2, 4, 2, 0] },
+  };
+  const IN_TUNE_CENTS = 25;
+  const MIN_CLARITY = 0.9;
+  const MIN_HZ = 60, MAX_HZ = 1500;
+  const REACTION = 0.12; // seconds people naturally sing a little behind the beat
+
+  const $ = (id) => document.getElementById(id);
+  const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+  const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+  let startMidi = load("warmupStart", 60);
+  let bpm = load("warmupBpm", 100);
+  let patternKey = load("warmupPattern", "scale");
+  if (!PATTERNS[patternKey]) patternKey = "scale";
+
+  let ctx, piano, stream, analyser, detector, buffer, wakeLock;
+  let running = false;
+
+  const label = (m) => { const n = Math.round(m); return NOTES[((n % 12) + 12) % 12] + (Math.floor(n / 12) - 1); };
+  const midiFromHz = (hz) => 69 + 12 * Math.log2(hz / 440);
+  const targets = () => PATTERNS[patternKey].steps.map((s) => startMidi + s);
+  const wait = (sec) => new Promise((r) => setTimeout(r, sec * 1000));
+
+  function render() {
+    $("keyVal").textContent = label(startMidi);
+    $("bpmVal").textContent = bpm;
+    $("patterns").innerHTML = "";
+    for (const [key, p] of Object.entries(PATTERNS)) {
+      const b = document.createElement("button");
+      b.textContent = p.name;
+      b.setAttribute("aria-pressed", String(key === patternKey));
+      b.onclick = () => { if (running) return; patternKey = key; save("warmupPattern", key); render(); };
+      $("patterns").append(b);
+    }
+    drawDots();
+  }
+
+  function drawDots(results = []) {
+    const box = $("dots");
+    box.innerHTML = "";
+    targets().forEach((m, i) => {
+      const d = document.createElement("div");
+      d.className = "dot" + (results[i] ? " " + results[i].kind : "");
+      d.innerHTML = `<div class="ball"></div><div class="nm">${label(m)}</div><div class="ct"></div>`;
+      if (results[i] && results[i].kind !== "miss") {
+        const c = results[i].cents;
+        d.querySelector(".ct").textContent = `${c > 0 ? "+" : ""}${c}`;
+      }
+      box.append(d);
+    });
+  }
+
+  function highlight(i) {
+    [...$("dots").children].forEach((d, j) => d.classList.toggle("now", j === i));
+  }
+
+  async function ensureAudio() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await ctx.resume();
+    piano ??= createPiano(ctx);
+    if (stream) return true;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      });
+    } catch {
+      $("error").textContent = "The microphone is blocked. In Safari, tap the \"aA\" button in the address bar, open Website Settings, set Microphone to Allow, then reload.";
+      return false;
+    }
+    const source = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+    buffer = new Float32Array(analyser.fftSize);
+    detector = PitchDetector.forFloat32Array(analyser.fftSize);
+    detector.minVolumeDecibels = -45;
+    return true;
+  }
+
+  function click(when) {
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.frequency.value = 1600;
+    g.gain.setValueAtTime(0.25, when);
+    g.gain.exponentialRampToValueAtTime(0.001, when + 0.05);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(when);
+    osc.stop(when + 0.06);
+  }
+
+  // Run one frame-by-frame loop until audio time `until`, calling fn(time) each frame
+  function frames(until, fn) {
+    return new Promise((resolve) => {
+      const tick = () => {
+        const t = ctx.currentTime;
+        if (t >= until) return resolve();
+        fn(t);
+        requestAnimationFrame(tick);
+      };
+      tick();
+    });
+  }
+
+  function readPitch() {
+    analyser.getFloatTimeDomainData(buffer);
+    const [hz, clarity] = detector.findPitch(buffer, ctx.sampleRate);
+    return clarity >= MIN_CLARITY && hz >= MIN_HZ && hz <= MAX_HZ ? midiFromHz(hz) : null;
+  }
+
+  function score(samples, target) {
+    if (samples.length < 4) return { kind: "miss" };
+    const sorted = [...samples].sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
+    let cents = Math.round((median - target) * 100);
+    cents -= 1200 * Math.round(cents / 1200); // any octave counts
+    const kind = Math.abs(cents) <= IN_TUNE_CENTS ? "ok" : cents < 0 ? "low" : "high";
+    return { kind, cents };
+  }
+
+  async function round() {
+    if (running) return;
+    $("error").textContent = "";
+    $("go").disabled = true;
+    if (!(await ensureAudio())) { $("go").disabled = false; return; }
+    running = true;
+    $("after").hidden = true;
+    try { wakeLock ??= await navigator.wakeLock?.request("screen"); } catch {}
+
+    const notes = targets();
+    const beat = 60 / bpm;
+    drawDots();
+    $("phase").textContent = "Loading piano…";
+    $("sub").textContent = "";
+    await piano.preload(notes);
+
+    // 1. Listen
+    $("phase").textContent = "Listen";
+    $("sub").textContent = `${PATTERNS[patternKey].name} starting on ${label(startMidi)}`;
+    const t0 = ctx.currentTime + 0.2;
+    notes.forEach((m, i) => piano.play(m, t0 + i * beat, beat * 0.95));
+    await frames(t0 + notes.length * beat, (t) => highlight(Math.floor((t - t0) / beat)));
+    highlight(-1);
+
+    // 2. Count in: two clicks, then sing
+    $("phase").textContent = "Your turn…";
+    const sing = ctx.currentTime + 2 * beat + 0.3;
+    click(sing - 2 * beat);
+    click(sing - beat);
+    await frames(sing, () => {});
+
+    // 3. Sing it back
+    $("phase").textContent = "Sing!";
+    const samples = notes.map(() => []);
+    await frames(sing + notes.length * beat + REACTION, (t) => {
+      const pos = (t - sing - REACTION) / beat;
+      const i = Math.floor(pos);
+      highlight(Math.floor((t - sing) / beat));
+      const midi = readPitch();
+      $("live").textContent = midi === null ? "" : `You: ${label(midi)}`;
+      // Skip the start of each note while the voice settles onto it
+      if (midi !== null && i >= 0 && i < notes.length && pos - i > 0.25) samples[i].push(midi);
+    });
+    highlight(-1);
+    $("live").textContent = "";
+
+    // 4. Results
+    const results = notes.map((m, i) => score(samples[i], m));
+    drawDots(results);
+    const hits = results.filter((r) => r.kind === "ok").length;
+    $("phase").textContent = `${hits} of ${notes.length} on pitch`;
+    $("sub").textContent = hits === notes.length ? "Clean! Try it a half step higher or a bit faster."
+      : results.some((r) => r.kind === "miss") ? "Dashed dots weren't heard. Sing a little louder or closer."
+      : "The number under each dot is how many cents off you were.";
+    $("go").textContent = "Start round";
+    $("go").disabled = false;
+    $("go").hidden = true;
+    $("after").hidden = false;
+    running = false;
+  }
+
+  function setKey(m) { if (running) return; startMidi = Math.max(36, Math.min(72, m)); save("warmupStart", startMidi); render(); }
+  function setBpm(b) { if (running) return; bpm = Math.max(50, Math.min(200, b)); save("warmupBpm", bpm); render(); }
+
+  $("keyDown").onclick = () => setKey(startMidi - 1);
+  $("keyUp").onclick = () => setKey(startMidi + 1);
+  $("bpmDown").onclick = () => setBpm(bpm - 10);
+  $("bpmUp").onclick = () => setBpm(bpm + 10);
+  $("go").onclick = round;
+  $("again").onclick = round;
+  $("upStep").onclick = () => { setKey(startMidi + 1); round(); };
+  $("downStep").onclick = () => { setKey(startMidi - 1); round(); };
+  render();
+</script>
+</body>
+</html>
