@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#111318">
+<title>Pitch Test</title>
+<style>
+  :root {
+    --bg: #111318; --panel: #1b1e26; --text: #f2f3f5; --muted: #9aa0ab;
+    --low: #f0a43c; --ok: #3ccf7f; --high: #e8615a; --accent: #8b7cf6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+    -webkit-user-select: none; user-select: none;
+  }
+  main { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 16px; }
+  h1 { font-size: 18px; font-weight: 600; margin: 4px 0 0; color: var(--muted); text-align: center; }
+  .note { text-align: center; margin-top: 8px; }
+  .note .name { font-size: 104px; font-weight: 700; line-height: 1; letter-spacing: -2px; }
+  .note .name small { font-size: 40px; font-weight: 500; color: var(--muted); margin-left: 2px; }
+  .note .hz { color: var(--muted); font-size: 15px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .verdict { text-align: center; font-size: 26px; font-weight: 700; min-height: 34px; }
+  .meter { position: relative; height: 56px; background: var(--panel); border-radius: 14px; overflow: hidden; }
+  .meter .zone { position: absolute; top: 0; bottom: 0; left: 42%; width: 16%; background: rgba(60, 207, 127, .18); }
+  .meter .center { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; background: var(--ok); opacity: .7; }
+  .meter .needle { position: absolute; top: 8px; bottom: 8px; left: 50%; width: 10px; margin-left: -5px; border-radius: 5px; background: var(--muted); transition: left 60ms linear, background 120ms; opacity: 0; }
+  .labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; margin-top: -8px; padding: 0 4px; }
+  canvas { width: 100%; height: 160px; background: var(--panel); border-radius: 14px; display: block; }
+  .caption { color: var(--muted); font-size: 13px; text-align: center; margin-top: -8px; }
+  button {
+    font: inherit; font-size: 22px; font-weight: 700; color: #fff; background: var(--accent);
+    border: 0; border-radius: 16px; padding: 22px; width: 100%; cursor: pointer;
+  }
+  button.stop { background: #3a3f4b; }
+  .tips { background: var(--panel); border-radius: 14px; padding: 14px 16px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .tips b { color: var(--text); }
+  .error { color: var(--high); text-align: center; font-size: 15px; min-height: 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Pitch Test</h1>
+
+  <div class="note">
+    <div class="name" id="name">–</div>
+    <div class="hz" id="hz">Tap Start, then sing</div>
+  </div>
+
+  <div class="verdict" id="verdict"></div>
+
+  <div class="meter" aria-hidden="true">
+    <div class="zone"></div>
+    <div class="center"></div>
+    <div class="needle" id="needle"></div>
+  </div>
+  <div class="labels"><span>too low</span><span>on it</span><span>too high</span></div>
+
+  <canvas id="trace" aria-label="Your pitch over the last few seconds"></canvas>
+  <div class="caption">Your pitch over the last 6 seconds. A steady note should be a flat line.</div>
+
+  <div class="error" id="error"></div>
+  <button id="start">Start</button>
+
+  <div class="tips">
+    <b>Before you start:</b> hold your phone about an arm's length away or set it on a table. When Safari asks to use the microphone, tap <b>Allow</b>. Nothing is recorded or saved; the sound stays on your phone.
+  </div>
+</main>
+
+<script type="module">
+  import { PitchDetector } from "https://cdn.jsdelivr.net/npm/pitchy@4.1.0/+esm";
+
+  const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
+  const IN_TUNE_CENTS = 15;    // within this many cents counts as "on it"
+  const MIN_CLARITY = 0.9;     // how sure Pitchy must be before we show a note
+  const MIN_HZ = 60, MAX_HZ = 1500;
+  const TRACE_SECONDS = 6;
+
+  const $ = (id) => document.getElementById(id);
+  const nameEl = $("name"), hzEl = $("hz"), verdictEl = $("verdict"),
+        needle = $("needle"), button = $("start"), errorEl = $("error"),
+        canvas = $("trace"), ctx = canvas.getContext("2d");
+
+  let audioCtx, stream, analyser, detector, buffer, rafId, wakeLock;
+  let smoothedMidi = null;
+  const trace = []; // { t, midi } points, midi may be null for silence
+
+  function midiFromHz(hz) { return 69 + 12 * Math.log2(hz / 440); }
+  function noteLabel(midi) {
+    const n = Math.round(midi);
+    return { letter: NOTES[((n % 12) + 12) % 12], octave: Math.floor(n / 12) - 1 };
+  }
+
+  async function start() {
+    errorEl.textContent = "";
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        // Turn off phone call processing, which fights against singing
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      });
+    } catch (e) {
+      errorEl.textContent = "The microphone is blocked. In Safari, tap the \"aA\" button in the address bar, open Website Settings, set Microphone to Allow, then reload.";
+      return;
+    }
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    await audioCtx.resume();
+    const source = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+    buffer = new Float32Array(analyser.fftSize);
+    detector = PitchDetector.forFloat32Array(analyser.fftSize);
+    detector.minVolumeDecibels = -45;
+
+    try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {}
+
+    button.textContent = "Stop";
+    button.classList.add("stop");
+    hzEl.textContent = "Listening… sing a note";
+    loop();
+  }
+
+  function stop() {
+    cancelAnimationFrame(rafId);
+    stream?.getTracks().forEach((t) => t.stop());
+    audioCtx?.close();
+    wakeLock?.release?.();
+    wakeLock = null;
+    smoothedMidi = null;
+    button.textContent = "Start";
+    button.classList.remove("stop");
+    showSilence("Stopped. Tap Start to go again");
+  }
+
+  function showSilence(msg) {
+    nameEl.textContent = "–";
+    hzEl.textContent = msg;
+    verdictEl.textContent = "";
+    needle.style.opacity = 0;
+  }
+
+  function loop() {
+    analyser.getFloatTimeDomainData(buffer);
+    const [hz, clarity] = detector.findPitch(buffer, audioCtx.sampleRate);
+    const now = performance.now();
+
+    if (clarity >= MIN_CLARITY && hz >= MIN_HZ && hz <= MAX_HZ) {
+      const midi = midiFromHz(hz);
+      // Light smoothing so the display isn't jittery, but reset on big jumps
+      smoothedMidi = smoothedMidi === null || Math.abs(midi - smoothedMidi) > 0.7
+        ? midi : smoothedMidi * 0.6 + midi * 0.4;
+      const target = Math.round(smoothedMidi);
+      const cents = Math.round((smoothedMidi - target) * 100);
+      const { letter, octave } = noteLabel(target);
+
+      nameEl.innerHTML = `${letter}<small>${octave}</small>`;
+      hzEl.textContent = `${hz.toFixed(1)} Hz · ${cents > 0 ? "+" : ""}${cents} cents`;
+
+      let color, word;
+      if (cents < -IN_TUNE_CENTS) { color = "var(--low)"; word = "Too low"; }
+      else if (cents > IN_TUNE_CENTS) { color = "var(--high)"; word = "Too high"; }
+      else { color = "var(--ok)"; word = "On it"; }
+      verdictEl.textContent = word;
+      verdictEl.style.color = color;
+      needle.style.background = color;
+      needle.style.opacity = 1;
+      needle.style.left = `${50 + Math.max(-50, Math.min(50, cents))}%`;
+      trace.push({ t: now, midi: smoothedMidi });
+    } else {
+      smoothedMidi = null;
+      showSilence("Listening… sing a note");
+      trace.push({ t: now, midi: null });
+    }
+
+    while (trace.length && now - trace[0].t > TRACE_SECONDS * 1000) trace.shift();
+    drawTrace(now);
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function drawTrace(now) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== w * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    const sung = trace.filter((p) => p.midi !== null);
+    if (!sung.length) return;
+    // Center the view on the latest note, showing 3 semitones above and below
+    const mid = Math.round(sung[sung.length - 1].midi);
+    const span = 3;
+    const y = (m) => h / 2 - ((m - mid) / span) * (h / 2);
+    const x = (t) => w - ((now - t) / (TRACE_SECONDS * 1000)) * w;
+
+    // Note grid lines
+    ctx.font = "11px -apple-system, sans-serif";
+    for (let m = mid - span; m <= mid + span; m++) {
+      ctx.strokeStyle = m === mid ? "rgba(60,207,127,.5)" : "rgba(255,255,255,.08)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, y(m)); ctx.lineTo(w, y(m)); ctx.stroke();
+      const { letter, octave } = noteLabel(m);
+      ctx.fillStyle = "rgba(255,255,255,.35)";
+      ctx.fillText(`${letter}${octave}`, 6, y(m) - 3);
+    }
+
+    // Pitch line, broken wherever there was silence
+    ctx.strokeStyle = "#8b7cf6";
+    ctx.lineWidth = 3;
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    let drawing = false;
+    for (const p of trace) {
+      if (p.midi === null) { drawing = false; continue; }
+      const px = x(p.t), py = y(p.midi);
+      if (!drawing) { ctx.moveTo(px, py); drawing = true; } else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+
+  button.addEventListener("click", () => (button.classList.contains("stop") ? stop() : start()));
+</script>
+</body>
+</html>
