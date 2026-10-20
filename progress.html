@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mariah">
+<meta name="theme-color" content="#f7f3ef">
+<title>Progress · Mariah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<link rel="icon" href="sloth.svg">
+<link rel="apple-touch-icon" href="sloth.svg">
+<style>
+  .chart-card { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .chart-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .chart-top .v { font-family: var(--serif); font-size: 26px; }
+  .chart-top .v small { font-family: var(--sans); font-size: 13px; color: var(--ink-3); margin-left: 2px; }
+  canvas { width: 100%; height: 150px; display: block; }
+  .bar { height: 6px; border-radius: 3px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; margin-top: 6px; }
+  .bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .empty { padding: 26px 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+  .empty .art { width: 120px; height: 144px; }
+  .acc { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .acc.ok { color: var(--ok); } .acc.low { color: var(--low); } .acc.high { color: var(--high); }
+</style>
+</head>
+<body>
+<main class="app">
+  <div>
+    <div class="eyebrow">Your practice</div>
+    <h1>Progress</h1>
+  </div>
+
+  <section class="stats">
+    <div class="card stat"><div class="v" id="sStreak">0</div><div class="l">Day streak</div></div>
+    <div class="card stat"><div class="v" id="sWeek">0<small>min</small></div><div class="l">This week</div></div>
+    <div class="card stat"><div class="v" id="sCount">0</div><div class="l">Sessions</div></div>
+  </section>
+
+  <section class="card empty" id="empty" hidden>
+    <div class="art" data-sloth="sleepy"></div>
+    <h2>No sessions yet</h2>
+    <p class="sub">Finish a warmup and your accuracy shows up here, so you can watch it climb.</p>
+    <a class="btn accent" href="warmup.html?start=all">Start a session</a>
+  </section>
+
+  <div id="filled" style="display:contents" hidden>
+    <section class="card chart-card">
+      <div class="chart-top"><span class="eyebrow">Accuracy, recent sessions</span><span class="v" id="avg"></span></div>
+      <canvas id="chart" aria-label="Accuracy over your recent sessions"></canvas>
+    </section>
+
+    <section class="section">
+      <h2>By exercise</h2>
+      <div class="list" id="byEx"></div>
+    </section>
+
+    <section class="section">
+      <h2>History</h2>
+      <div class="list" id="history"></div>
+    </section>
+  </div>
+
+  <p class="hint">Progress is saved only on this phone. Clearing Safari's website data resets it.</p>
+</main>
+
+<script type="module">
+  import { sessions, stats, accuracy } from "./store.js";
+  import { EXERCISES } from "./exercises.js";
+  import { drawSloths } from "./sloth.js";
+  import { tabbar } from "./ui.js";
+
+  const $ = (id) => document.getElementById(id);
+  const all = sessions();
+  const s = stats();
+  $("sStreak").textContent = s.streak;
+  $("sWeek").innerHTML = `${s.weekMinutes}<small>min</small>`;
+  $("sCount").textContent = s.count;
+
+  const tone = (pct) => (pct >= 75 ? "ok" : pct >= 50 ? "low" : "high");
+
+  if (!all.length) {
+    $("empty").hidden = false;
+    $("filled").remove();
+  } else {
+    $("filled").hidden = false;
+    const recent = all.slice(-14);
+    const accs = recent.map(accuracy);
+    $("avg").innerHTML = `${Math.round(accs.reduce((a, b) => a + b, 0) / accs.length)}<small>% avg</small>`;
+    drawChart(accs);
+
+    $("byEx").innerHTML = EXERCISES.map((ex, i) => {
+      let hits = 0, total = 0;
+      for (const sess of all) for (const e of sess.exercises) if (e.id === ex.id) { hits += e.hits; total += e.total; }
+      const pct = total ? Math.round((hits / total) * 100) : null;
+      return `<div class="row">
+        <span class="badge">${i + 1}</span>
+        <span class="grow"><div class="title">${ex.name}</div>
+          <div class="bar"><i style="width:${pct ?? 0}%"></i></div></span>
+        <span class="acc ${pct === null ? "" : tone(pct)}">${pct === null ? "–" : pct + "%"}</span>
+      </div>`;
+    }).join("");
+
+    $("history").innerHTML = all.slice(-20).reverse().map((sess) => {
+      const d = new Date(sess.at), pct = accuracy(sess);
+      const when = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      const time = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+      const names = sess.exercises.map((e) => e.name).join(", ");
+      return `<div class="row">
+        <span class="grow"><div class="title">${when}</div><div class="meta">${time} · ${Math.max(1, Math.round(sess.minutes))} min · ${names}</div></span>
+        <span class="acc ${tone(pct)}">${pct}%</span>
+      </div>`;
+    }).join("");
+  }
+
+  function drawChart(values) {
+    const c = $("chart"), g = c.getContext("2d");
+    const dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const left = 30, pad = 10;
+    const x = (i) => values.length === 1 ? (left + w) / 2 : left + pad + (i / (values.length - 1)) * (w - left - pad * 2);
+    const y = (v) => h - 10 - (v / 100) * (h - 20);
+    g.font = "500 10px Inter, -apple-system, sans-serif";
+    for (const v of [0, 50, 100]) {
+      g.strokeStyle = "#ebe3de"; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(left, y(v)); g.lineTo(w, y(v)); g.stroke();
+      g.fillStyle = "#a3969b"; g.fillText(`${v}%`, 0, y(v) + 3);
+    }
+    // Soft area under the line, then the line, then points
+    g.beginPath();
+    values.forEach((v, i) => (i ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v))));
+    g.lineTo(x(values.length - 1), y(0)); g.lineTo(x(0), y(0)); g.closePath();
+    g.fillStyle = "rgba(181,103,125,.10)"; g.fill();
+    g.beginPath();
+    values.forEach((v, i) => (i ? g.lineTo(x(i), y(v)) : g.moveTo(x(i), y(v))));
+    g.strokeStyle = "#b5677d"; g.lineWidth = 2.5; g.lineJoin = "round"; g.stroke();
+    values.forEach((v, i) => {
+      g.beginPath(); g.arc(x(i), y(v), 3.5, 0, Math.PI * 2);
+      g.fillStyle = "#fff"; g.fill(); g.strokeStyle = "#b5677d"; g.lineWidth = 2; g.stroke();
+    });
+  }
+
+  drawSloths();
+  tabbar("progress");
+</script>
+</body>
+</html>

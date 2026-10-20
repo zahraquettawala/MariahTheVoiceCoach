@@ -4,143 +4,181 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#fbf6f2">
-<title>Vocal Workout</title>
+<meta name="apple-mobile-web-app-title" content="Mariah">
+<meta name="theme-color" content="#f7f3ef">
+<title>Session · Mariah</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="theme.css">
 <link rel="icon" href="sloth.svg">
 <link rel="apple-touch-icon" href="sloth.svg">
 <style>
-  .sound { font-size: 30px; font-weight: 800; color: var(--accent-deep); min-height: 38px; text-align: center; }
-  .meta { display: flex; gap: 8px; align-items: baseline; justify-content: center; color: var(--muted); font-size: 14px; margin-top: -12px; }
-  .meta .key { font-weight: 800; color: var(--text); font-size: 16px; }
-  .notes { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; min-height: 16px; max-width: 360px; }
-  .n { height: 14px; min-width: 14px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--soft); transition: background 120ms, transform 120ms; }
-  .n.cur { background: var(--accent); box-shadow: none; transform: scale(1.25); }
-  .n.ok { background: var(--ok); box-shadow: none; } .n.low { background: var(--low); box-shadow: none; } .n.high { background: var(--high); box-shadow: none; }
-  .n.miss { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
-  .live { color: var(--muted); font-size: 13px; min-height: 18px; margin-top: -10px; }
-  .sound:empty, .key:empty, .notes:empty, .history:empty { display: none; }
-  .history { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 8px; }
-  .history span { width: 8px; height: 8px; border-radius: 50%; background: var(--soft); }
+  .app { padding-bottom: calc(40px + env(safe-area-inset-bottom)); gap: 18px; }
+  .nav { display: flex; align-items: center; justify-content: space-between; }
+  .nav .mid { text-align: center; font-weight: 600; font-size: 15px; }
+  .segments { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .segments span { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; position: relative; }
+  .segments span i { position: absolute; inset: 0; width: 0; background: var(--accent); transition: width .3s; }
+  .ex-head { display: flex; flex-direction: column; gap: 4px; }
+  .lane-card { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .lane-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-3); }
+  .lane-top .pill { font-variant-numeric: tabular-nums; }
+  canvas { width: 100%; height: 210px; display: block; }
+  .history { display: flex; flex-wrap: wrap; gap: 4px; min-height: 8px; }
+  .history span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
   .history span.ok { background: var(--ok); } .history span.low { background: var(--low); } .history span.high { background: var(--high); }
-
-  /* The four exercises as stops along a vine */
-  .path { position: relative; width: 100%; display: flex; justify-content: space-between; padding: 0 6px; }
-  .path::before { content: ""; position: absolute; left: 40px; right: 40px; top: 25px; border-top: 3px dotted #e2c7cf; }
-  .ex { position: relative; width: 25%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .ex .dot { width: 52px; height: 52px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-weight: 800; color: var(--accent-deep); font-size: 18px; box-shadow: 0 4px 14px rgba(194, 125, 146, .14); transition: transform .2s; }
-  .ex .nm { font-size: 12.5px; font-weight: 700; line-height: 1.2; text-align: center; }
-  .ex .sd { font-size: 11.5px; color: var(--muted); }
-  .ex.active .dot { background: var(--accent); color: #fff; transform: scale(1.12); }
-  .ex.done .dot { background: var(--ok); color: #fff; }
-  .path[aria-disabled="true"] .ex:not(.active) { opacity: .5; }
-
-  details { width: 100%; }
-  summary { list-style: none; text-align: center; color: var(--muted); font-weight: 700; font-size: 14px; cursor: pointer; }
-  summary::-webkit-details-marker { display: none; }
-  details[aria-disabled="true"] { opacity: .45; pointer-events: none; }
-  .settings { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
-  .set { display: flex; align-items: center; gap: 10px; }
-  .set .label { flex: 1; font-size: 14px; color: var(--muted); font-weight: 600; }
-  .set .value { min-width: 64px; text-align: center; font-weight: 800; font-size: 17px; }
-  .toggle { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; font-weight: 600; }
-  .toggle input { width: 20px; height: 20px; accent-color: var(--accent-deep); }
+  .row .badge.on { background: var(--accent); color: #fff; }
+  .row .badge.done { background: var(--ok-soft); color: var(--ok); }
+  .row.current { background: var(--surface-2); }
+  .list[aria-disabled="true"] { pointer-events: none; }
+  #settings { padding: 4px 16px; }
+  #settings .row { padding: 12px 0; }
+  .toggle { width: 44px; height: 26px; border-radius: 13px; background: var(--line); position: relative; transition: background .2s; flex: none; }
+  .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: left .2s; }
+  .toggle[aria-checked="true"] { background: var(--accent); }
+  .toggle[aria-checked="true"]::after { left: 21px; }
+  .summary { padding: 20px; display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; }
+  .summary .big { font-family: var(--serif); font-size: 54px; line-height: 1; }
+  .summary .art { width: 110px; height: 132px; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--ink-3); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
 </style>
 </head>
 <body>
-<main>
-  <div class="topbar">
-    <div class="wordmark"><span class="mini" data-sloth="happy" data-bow="no"></span>Mariah</div>
-    <nav class="switch"><a href="./">Pitch</a><span>Workout</span></nav>
+<main class="app">
+  <div class="nav">
+    <a class="icon-btn" href="./" aria-label="Back to Today"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="mid">Power workout</div>
+    <button class="icon-btn" id="gear" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
   </div>
 
-  <div class="hero">
-    <div class="bubble" id="feedback">Hi! Ready to warm up together?</div>
-    <div class="cloud bob"><div id="mascot" data-sloth="happy"></div></div>
+  <div class="segments" id="segments"><span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span></div>
+
+  <section class="card" id="settings" hidden>
+    <div class="row"><span class="grow title">Lowest note</span><div class="stepper"><button id="keyDown" aria-label="Lower">−</button><span class="val" id="keyVal">G3</span><button id="keyUp" aria-label="Higher">+</button></div></div>
+    <div class="row"><span class="grow title">Half steps to climb</span><div class="stepper"><button id="climbDown" aria-label="Fewer">−</button><span class="val" id="climbVal">9</span><button id="climbUp" aria-label="More">+</button></div></div>
+    <div class="row"><span class="grow title">Speed</span><div class="stepper"><button id="speedDown" aria-label="Slower">−</button><span class="val" id="speedVal">100%</span><button id="speedUp" aria-label="Faster">+</button></div></div>
+    <div class="row"><span class="grow title">Spoken feedback</span><button class="toggle" id="speak" role="switch" aria-checked="true" aria-label="Spoken feedback"></button></div>
+  </section>
+
+  <div class="ex-head">
+    <span class="eyebrow" id="exNum">Exercise 1 of 4</span>
+    <h1 id="exName">Fifths</h1>
+    <span class="sub" id="exDesc"></span>
   </div>
 
-  <div class="sound" id="sound"></div>
-  <div class="meta"><span class="key" id="key"></span><span id="now">Pick an exercise, or do them all</span></div>
-  <div class="notes" id="notes"></div>
-  <div class="live" id="live"></div>
+  <section class="card lane-card">
+    <div class="lane-top"><span class="pill" id="keyPill">Key –</span><span id="loopInfo">Ready</span></div>
+    <canvas id="lane" aria-label="Target notes and your pitch"></canvas>
+    <div class="legend"><span><i style="background:var(--ok)"></i>On pitch</span><span><i style="background:var(--low)"></i>Flat</span><span><i style="background:var(--high)"></i>Sharp</span><span><i style="background:var(--ink)"></i>Your voice</span></div>
+  </section>
+
+  <div class="coach">
+    <div class="avatar"><div id="mascot" data-sloth="happy" data-pose="head"></div></div>
+    <div><div class="who">Mariah</div><div class="says" id="says">Put your earbuds in, then tap Start.</div></div>
+  </div>
   <div class="history" id="history"></div>
 
-  <div class="path" id="exercises"></div>
-
   <div class="error" id="error"></div>
-  <button class="go" id="go">Start full workout</button>
+  <button class="btn block" id="go">Start</button>
 
-  <details id="controls">
-    <summary>Settings ⌄</summary>
-    <div class="settings">
-      <div class="set"><span class="label">Lowest note</span><button class="round" id="keyDown" aria-label="Lower">−</button><span class="value" id="keyVal">G3</span><button class="round" id="keyUp" aria-label="Higher">+</button></div>
-      <div class="set"><span class="label">Half steps to climb</span><button class="round" id="climbDown" aria-label="Fewer">−</button><span class="value" id="climbVal">9</span><button class="round" id="climbUp" aria-label="More">+</button></div>
-      <div class="set"><span class="label">Speed</span><button class="round" id="speedDown" aria-label="Slower">−</button><span class="value" id="speedVal">100%</span><button class="round" id="speedUp" aria-label="Faster">+</button></div>
-      <label class="toggle"><input type="checkbox" id="speak" checked> Say the feedback out loud</label>
-    </div>
-  </details>
+  <section class="card summary" id="summary" hidden>
+    <div class="art" data-sloth="proud"></div>
+    <div class="eyebrow">Session complete</div>
+    <div class="big" id="sumAcc">0%</div>
+    <div class="sub" id="sumMeta">of notes on pitch</div>
+    <a class="btn ghost block" href="progress.html">See progress</a>
+  </section>
 
-  <p class="hint">🎧 <b>Wear wired earbuds</b> so the mic hears you, not the piano. The piano gives you the note and sings along, moving up a half step each loop. Nothing is recorded or saved.</p>
+  <section class="section">
+    <h2>Session</h2>
+    <div class="list" id="exList"></div>
+  </section>
+
+  <p class="hint">🎧 <b>Wear wired earbuds</b> so the mic hears you, not the piano. Each loop moves up a half step, then back down. After each loop Mariah tells you if you were on pitch, flat or sharp.</p>
 </main>
 
 <script type="module">
   import { PitchDetector } from "https://cdn.jsdelivr.net/npm/pitchy@4.1.0/+esm";
   import { createPiano } from "./piano.js";
   import { drawSloths, setMood } from "./sloth.js";
+  import { EXERCISES, layout, keysFor, minutesFor, settings } from "./exercises.js";
+  import { saveSession } from "./store.js";
 
   const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
   const IN_TUNE_CENTS = 25;
   const MIN_CLARITY = 0.9;
   const MIN_HZ = 60, MAX_HZ = 1500;
 
-  // Each exercise is a loop of [semitones above the key, beats]. null is a rest.
-  // `cue` is the piano alone giving you the note; `sing` is played with you and scored.
-  // Patterns and speeds follow the Aussie Vocal Coach "Daily Vocal Exercises" workout.
-  const RUN = [0, 2, 4, 5, 7, 5, 4, 2, 0, 2, 4, 5, 7, 5, 4, 2].map((s) => [s, 0.5]);
-  const EXERCISES = [
-    { name: "Fifths", sound: "Hum (mm)", desc: "1 · 5-5 · 1 · 5 · 1, slow and steady", bpm: 60, offset: 0,
-      cue: [[0, 2]], sing: [[0, 1], [7, 0.5], [7, 0.5], [0, 1], [7, 1], [0, 2]] },
-    { name: "More fifths", sound: "Nay", desc: "1 · 5 · 1 · 5 · 1, one note per beat", bpm: 60, offset: 2,
-      cue: [], sing: [[0, 1], [7, 1], [0, 1], [7, 1], [0, 2], [null, 2]] },
-    { name: "5-note scale", sound: "Mah", desc: "Up the scale, hold the top, back down", bpm: 60, offset: 0,
-      cue: [[0, 2]], sing: [[0, 0.5], [2, 0.5], [4, 0.5], [5, 0.5], [7, 2.5], [5, 0.5], [4, 0.5], [2, 0.5], [0, 1]] },
-    { name: "Fast runs", sound: "Ah", desc: "Quick 5-note runs, twice per key", bpm: 110, offset: 2,
-      cue: [[0, 2], [null, 1.75]], sing: [...RUN, [0, 2], [null, 1.5], ...RUN, [0, 1.5], [null, 0.5]] },
-  ];
-
   const $ = (id) => document.getElementById(id);
-  const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
-  const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
-
-  let baseMidi = load("workoutBase", 55); // G3
-  let climb = load("workoutClimb", 9);
-  let speed = load("workoutSpeed", 100);
+  const label = (m) => { const n = Math.round(m); return NOTES[((n % 12) + 12) % 12] + (Math.floor(n / 12) - 1); };
+  const midiFromHz = (hz) => 69 + 12 * Math.log2(hz / 440);
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
   let ctx, piano, stream, analyser, detector, buffer, wakeLock;
   let running = false;
+  let selected = [];        // exercise indexes for this session
+  let lane = null;          // what the pitch lane is showing
+  let done = new Set();
 
-  const label = (m) => { const n = Math.round(m); return NOTES[((n % 12) + 12) % 12] + (Math.floor(n / 12) - 1); };
-  const midiFromHz = (hz) => 69 + 12 * Math.log2(hz / 440);
+  // ---------- Pitch lane ----------
+  const canvas = $("lane"), g = canvas.getContext("2d");
 
-  function render() {
-    $("keyVal").textContent = label(baseMidi);
-    $("climbVal").textContent = climb;
-    $("speedVal").textContent = `${speed}%`;
-    $("exercises").innerHTML = "";
-    EXERCISES.forEach((ex, i) => {
-      const b = document.createElement("button");
-      b.className = "ex";
-      b.id = `ex${i}`;
-      b.title = ex.desc;
-      b.innerHTML = `<span class="dot">${i + 1}</span><span class="nm">${ex.name}</span><span class="sd">“${ex.sound.replace(/ \(.*\)/, "")}”</span>`;
-      b.onclick = () => { if (!running) start([i]); };
-      $("exercises").append(b);
-    });
+  function drawLane() {
+    const dpr = window.devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
+    if (canvas.width !== Math.round(w * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    const line = css("--line"), ink3 = css("--ink-3");
+    const key = lane?.key ?? 55;
+    const lo = key - 3, hi = key + 10, left = 30;
+    const y = (m) => h - 8 - ((m - lo) / (hi - lo)) * (h - 16);
+    g.font = "500 10px Inter, -apple-system, sans-serif";
+    for (let m = lo; m <= hi; m++) {
+      const rel = ((m - key) % 12 + 12) % 12;
+      g.strokeStyle = rel === 0 ? css("--accent-soft") : line;
+      g.lineWidth = rel === 0 ? 1.5 : 1;
+      g.globalAlpha = rel === 0 || rel === 7 ? 1 : .45;
+      g.beginPath(); g.moveTo(left, y(m)); g.lineTo(w, y(m)); g.stroke();
+      g.globalAlpha = 1;
+      if (rel === 0 || rel === 7) { g.fillStyle = ink3; g.fillText(label(m), 0, y(m) + 3.5); }
+    }
+    if (!lane) return;
+    const x = (beat) => left + (beat / lane.beats) * (w - left - 4);
+    const barH = Math.max(6, (h - 16) / (hi - lo) * .7);
+    let si = 0;
+    for (const e of lane.events) {
+      const r = e.scored ? lane.results?.[si++] : null;
+      const x0 = x(e.start) + 1, x1 = x(e.start + e.beats) - 1, yy = y(e.midi) - barH / 2;
+      g.beginPath();
+      g.roundRect(x0, yy, Math.max(3, x1 - x0), barH, barH / 2);
+      if (!e.scored) { g.setLineDash([3, 3]); g.strokeStyle = ink3; g.lineWidth = 1.2; g.stroke(); g.setLineDash([]); continue; }
+      g.fillStyle = !r ? css("--accent-soft") : r.kind === "ok" ? css("--ok") : r.kind === "low" ? css("--low") : r.kind === "high" ? css("--high") : line;
+      g.fill();
+    }
+    // Your voice
+    g.strokeStyle = css("--ink"); g.lineWidth = 2.2; g.lineJoin = "round"; g.lineCap = "round";
+    g.beginPath();
+    let prev = null;
+    for (const p of lane.voice) {
+      if (p.midi === null) { prev = null; continue; }
+      // Show your voice in the octave of the notes, so any octave lines up
+      let m = p.midi; const ref = p.target ?? key + 3.5;
+      m -= 12 * Math.round((m - ref) / 12);
+      const px = x(p.beat), py = y(m);
+      if (prev && Math.abs(prev - m) < 3) g.lineTo(px, py); else g.moveTo(px, py);
+      prev = m;
+    }
+    g.stroke();
+    if (lane.pos !== null && lane.pos >= 0 && lane.pos <= lane.beats) {
+      g.strokeStyle = css("--accent"); g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(x(lane.pos), 4); g.lineTo(x(lane.pos), h - 4); g.stroke();
+    }
   }
+  const animate = () => { drawLane(); requestAnimationFrame(animate); };
 
+  // ---------- Audio ----------
   async function ensureAudio() {
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
     await ctx.resume();
@@ -182,184 +220,206 @@
     });
   }
 
+  // ---------- Coaching ----------
   function score(samples, target) {
     if (samples.length < 4) return { kind: "miss" };
     const sorted = [...samples].sort((a, b) => a - b);
-    const median = sorted[Math.floor(sorted.length / 2)];
-    let cents = Math.round((median - target) * 100);
+    let cents = Math.round((sorted[Math.floor(sorted.length / 2)] - target) * 100);
     cents -= 1200 * Math.round(cents / 1200); // any octave counts
     return { kind: Math.abs(cents) <= IN_TUNE_CENTS ? "ok" : cents < 0 ? "low" : "high", cents };
   }
 
-  // One or two words, so it fits between loops like a real coach
   function verdict(results) {
     const heard = results.filter((r) => r.kind !== "miss");
-    if (heard.length < results.length / 2) return { word: "Louder", kind: "miss" };
+    if (heard.length < results.length / 2) return { word: "Louder", line: "I can't quite hear you. Sing out a little more.", kind: "" };
     const ok = heard.filter((r) => r.kind === "ok").length;
-    if (ok >= heard.length * 0.8) return { word: ["Nice", "Good", "Yes"][Math.floor(Math.random() * 3)], kind: "ok" };
-    const flat = heard.filter((r) => r.kind === "low").length;
-    const sharp = heard.filter((r) => r.kind === "high").length;
-    return flat >= sharp ? { word: "Flat", kind: "low" } : { word: "Sharp", kind: "high" };
+    if (ok >= heard.length * 0.8) return { word: "Nice", line: ["Nice, right on pitch.", "Lovely. Keep going.", "Clean. Up we go."][Math.floor(Math.random() * 3)], kind: "ok" };
+    const flat = heard.filter((r) => r.kind === "low").length, sharp = heard.filter((r) => r.kind === "high").length;
+    return flat >= sharp
+      ? { word: "Flat", line: "A little flat. Think up as you sing.", kind: "low" }
+      : { word: "Sharp", line: "A little sharp. Relax and let it settle.", kind: "high" };
+  }
+
+  function coach(text, kind = "", mood = null) {
+    $("says").textContent = text;
+    $("says").className = "says " + kind;
+    if (mood) setMood($("mascot"), mood);
   }
 
   function say(text) {
-    if (!$("speak").checked || !("speechSynthesis" in window)) return;
+    if (!settings.speak || !("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.rate = 1.1;
     speechSynthesis.speak(u);
   }
 
-  // Lay one loop out in time: every note with its start beat and whether it's scored
-  function layout(ex, key) {
-    const events = [];
-    let beat = 0;
-    for (const [part, scored] of [[ex.cue, false], [ex.sing, true]]) {
-      for (const [step, beats] of part) {
-        if (step !== null) events.push({ midi: key + step, start: beat, beats, scored });
-        beat += beats;
-      }
-    }
-    return { events, beats: beat };
+  // ---------- Session ----------
+  function showExercise(i) {
+    const ex = EXERCISES[i];
+    $("exNum").textContent = `Exercise ${selected.indexOf(i) + 1} of ${selected.length}`;
+    $("exName").textContent = ex.name;
+    $("exDesc").textContent = `“${ex.sound}” · ${ex.desc}`;
+    const key = settings.base + ex.offset;
+    lane = { ...layout(ex, key), key, voice: [], results: null, pos: null };
+    $("keyPill").textContent = `Key ${label(key)}`;
+    renderList(i);
   }
 
-  function drawNotes(events, results = []) {
-    $("notes").innerHTML = "";
-    events.filter((e) => e.scored).forEach((e, i) => {
-      const d = document.createElement("div");
-      d.className = "n" + (results[i] ? " " + results[i].kind : "");
-      d.style.width = `${Math.max(10, e.beats * 22)}px`;
-      $("notes").append(d);
-    });
-  }
-
-  async function runExercise(index) {
+  async function runExercise(index, tally) {
     const ex = EXERCISES[index];
-    const beat = 60 / (ex.bpm * speed / 100);
-    const low = baseMidi + ex.offset;
-    const keys = [];
-    for (let k = 0; k <= climb; k++) keys.push(low + k);
-    for (let k = climb - 1; k >= 0; k--) keys.push(low + k);
-
-    document.querySelectorAll(".ex").forEach((b) => b.classList.remove("active"));
-    $(`ex${index}`).classList.add("active");
+    const beat = 60 / (ex.bpm * settings.speed / 100);
+    const keys = keysFor(ex, settings.base, settings.climb);
+    showExercise(index);
     $("history").innerHTML = "";
-    $("feedback").className = "bubble";
-    $("feedback").textContent = `${ex.name} on “${ex.sound.replace(/ \(.*\)/, "")}”. ${ex.desc}.`;
-    setMood($("mascot"), "sing");
-    $("now").textContent = `Exercise ${index + 1}: ${ex.name} · loading piano…`;
-    say(`Exercise ${index + 1}. ${ex.name}, on ${ex.sound.replace(/ \(.*\)/, "")}.`);
+    coach(`${ex.name} on “${ex.sound}”. Sing along with the piano.`, "", "sing");
+    say(`${ex.name}, on ${ex.sound}.`);
     await piano.preload(keys.flatMap((k) => layout(ex, k).events.map((e) => e.midi)));
+    const seg = $("segments").children[selected.indexOf(index)].firstChild;
 
-    let t = ctx.currentTime + 0.3;
+    let t = ctx.currentTime + 0.4;
     for (let loop = 0; loop < keys.length && running; loop++) {
       const key = keys[loop];
       const { events, beats } = layout(ex, key);
-      const scoredEvents = events.filter((e) => e.scored);
-      $("now").textContent = `Exercise ${index + 1}: ${ex.name} · ${loop + 1} of ${keys.length}`;
-      $("key").textContent = label(key);
-      if (loop > 0) setTimeout(() => running && setMood($("mascot"), "sing"), 900);
-      $("sound").textContent = `“${ex.sound}”`;
-      drawNotes(events);
+      const scored = events.filter((e) => e.scored);
+      lane = { events, beats, key, voice: [], results: null, pos: 0 };
+      $("keyPill").textContent = `Key ${label(key)}`;
+      $("loopInfo").textContent = `Loop ${loop + 1} of ${keys.length}`;
+      seg.style.width = `${(loop / keys.length) * 100}%`;
 
       for (const e of events) piano.play(e.midi, t + e.start * beat, e.beats * beat * 0.95, e.scored ? 0.65 : 0.85);
 
-      const loopStart = t;
-      const samples = scoredEvents.map(() => []);
-      const lastEnd = Math.max(...scoredEvents.map((e) => e.start + e.beats));
-      const cells = [...$("notes").children];
-      await frames(loopStart + lastEnd * beat, (now) => {
-        const pos = (now - loopStart) / beat;
-        const i = scoredEvents.findIndex((e) => pos >= e.start && pos < e.start + e.beats);
-        cells.forEach((c, j) => c.classList.toggle("cur", j === i));
+      const start = t, samples = scored.map(() => []);
+      const lastEnd = Math.max(...scored.map((e) => e.start + e.beats));
+      await frames(start + lastEnd * beat, (now) => {
+        const pos = (now - start) / beat;
+        lane.pos = pos;
+        const i = scored.findIndex((e) => pos >= e.start && pos < e.start + e.beats);
         const midi = readPitch();
-        $("live").textContent = midi === null ? "" : `You: ${label(midi)}`;
+        lane.voice.push({ beat: pos, midi, target: i >= 0 ? scored[i].midi : null });
         // Skip the first part of each note while the voice moves onto it
-        if (midi !== null && i >= 0 && (pos - scoredEvents[i].start) / scoredEvents[i].beats > 0.3) samples[i].push(midi);
+        if (midi !== null && i >= 0 && (pos - scored[i].start) / scored[i].beats > 0.3) samples[i].push(midi);
       });
       if (!running) break;
-      $("live").textContent = "";
 
-      const results = scoredEvents.map((e, i) => score(samples[i], e.midi));
-      drawNotes(events, results);
+      const results = scored.map((e, i) => score(samples[i], e.midi));
+      lane.results = results;
+      lane.pos = null;
       const v = verdict(results);
-      $("feedback").textContent = v.word;
-      $("feedback").className = "bubble " + v.kind;
-      setMood($("mascot"), v.kind === "ok" ? "proud" : v.kind === "miss" ? "happy" : "oops");
+      coach(v.line, v.kind, v.kind === "ok" ? "proud" : v.kind ? "oops" : "happy");
       say(v.word);
+      setTimeout(() => running && setMood($("mascot"), "sing"), 1400);
+      tally.hits += results.filter((r) => r.kind === "ok").length;
+      tally.total += results.length;
       const chip = document.createElement("span");
       chip.className = v.kind;
-      chip.title = label(key);
       $("history").append(chip);
 
-      t = loopStart + beats * beat; // next loop starts right away, like the video
+      t = start + beats * beat; // the next loop starts right away
     }
-    $(`ex${index}`).classList.remove("active");
-    if (running) $(`ex${index}`).classList.add("done");
+    if (running) { seg.style.width = "100%"; done.add(index); }
   }
 
-  async function start(list) {
+  async function start() {
     $("error").textContent = "";
     if (!(await ensureAudio())) return;
     running = true;
     $("go").textContent = "Stop";
-    $("go").classList.add("stop");
-    $("controls").setAttribute("aria-disabled", "true");
-    $("exercises").setAttribute("aria-disabled", "true");
-    document.querySelectorAll(".ex").forEach((b) => b.classList.remove("done"));
+    $("go").className = "btn block stop";
+    $("settings").hidden = true;
+    $("summary").hidden = true;
+    $("exList").setAttribute("aria-disabled", "true");
     try { wakeLock ??= await navigator.wakeLock?.request("screen"); } catch {}
-    document.querySelector(".hero").scrollIntoView({ behavior: "smooth", block: "start" });
-    $("feedback").className = "bubble";
-    $("feedback").textContent = "Let's go! Sing along with me.";
-    setMood($("mascot"), "sing");
+    window.scrollTo({ top: 0, behavior: "smooth" });
 
-    for (let n = 0; n < list.length && running; n++) {
-      await runExercise(list[n]);
-      if (running && n < list.length - 1) {
-        $("now").textContent = "Quick breather";
-        $("key").textContent = "";
-        $("feedback").className = "bubble";
-        $("feedback").textContent = "Sip of water? 💧 Next one coming up.";
-        setMood($("mascot"), "happy");
-        $("sound").textContent = "";
-        $("notes").innerHTML = "";
+    const began = Date.now(), results = [];
+    for (let n = 0; n < selected.length && running; n++) {
+      const tally = { hits: 0, total: 0 };
+      await runExercise(selected[n], tally);
+      const ex = EXERCISES[selected[n]];
+      if (tally.total) results.push({ id: ex.id, name: ex.name, ...tally });
+      if (running && n < selected.length - 1) {
+        coach("Nice work. Take a sip of water, next one's coming.", "", "happy");
         say("Nice. Next exercise.");
         await frames(ctx.currentTime + 4, () => {});
       }
     }
-    stop(!running ? "Stopped" : list.length > 1 ? "That's your workout! 🎉" : "Exercise done! 🎉");
+    const finished = running;
+    if (results.length) saveSession({ at: new Date().toISOString(), minutes: (Date.now() - began) / 60000, exercises: results });
+    stop();
+    if (finished && results.length) {
+      const hits = results.reduce((n, r) => n + r.hits, 0), total = results.reduce((n, r) => n + r.total, 0);
+      $("sumAcc").textContent = `${Math.round((hits / total) * 100)}%`;
+      $("sumMeta").textContent = `of notes on pitch across ${results.length} exercise${results.length > 1 ? "s" : ""}`;
+      $("summary").hidden = false;
+      coach("You did it. I'm proud of you.", "ok", "proud");
+      say("That's your session. Great job.");
+      $("summary").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   }
 
-  function stop(message) {
-    const finished = running && message !== "Stopped";
+  function stop() {
+    if (running) coach("Paused. Tap Start when you're ready.", "", "sleepy");
     running = false;
-    $("go").textContent = "Start full workout";
-    $("go").classList.remove("stop");
-    $("controls").removeAttribute("aria-disabled");
-    $("exercises").removeAttribute("aria-disabled");
-    document.querySelectorAll(".ex").forEach((b) => b.classList.remove("active"));
-    $("live").textContent = "";
-    $("now").textContent = message;
-    $("sound").textContent = "";
-    $("feedback").className = "bubble";
-    $("feedback").textContent = finished ? "You did it! So proud of you 💕" : "Taking a break? I'll be right here.";
-    setMood($("mascot"), finished ? "proud" : "sleepy");
-    if (finished) say(message.startsWith("That's") ? "That's your workout. Great job." : "Nice work.");
+    $("go").textContent = selected.length > 1 ? "Start session" : "Start exercise";
+    $("go").className = "btn block";
+    $("exList").removeAttribute("aria-disabled");
+    $("loopInfo").textContent = "Ready";
+    if (lane) lane.pos = null;
+    renderList(selected[0]);
   }
 
-  function setBase(m) { baseMidi = Math.max(36, Math.min(72, m)); save("workoutBase", baseMidi); render(); }
-  function setClimb(c) { climb = Math.max(1, Math.min(14, c)); save("workoutClimb", climb); render(); }
-  function setSpeed(s) { speed = Math.max(50, Math.min(150, s)); save("workoutSpeed", speed); render(); }
+  function renderList(current) {
+    $("exList").innerHTML = EXERCISES.map((ex, i) => {
+      const inSession = selected.includes(i);
+      const state = done.has(i) ? "done" : i === current && running ? "on" : "";
+      return `<button class="row ${i === current ? "current" : ""}" data-i="${i}">
+        <span class="badge ${state}">${done.has(i) ? "✓" : i + 1}</span>
+        <span class="grow"><div class="title">${ex.name}</div><div class="meta">“${ex.sound}” · ${Math.max(1, Math.round(minutesFor(ex, settings.climb, settings.speed)))} min${inSession ? "" : " · tap to do just this one"}</div></span>
+      </button>`;
+    }).join("");
+    $("exList").querySelectorAll(".row").forEach((r) => (r.onclick = () => {
+      if (running) return;
+      const i = Number(r.dataset.i);
+      selected = [i];
+      setSegments();
+      showExercise(i);
+    }));
+  }
 
-  $("keyDown").onclick = () => setBase(baseMidi - 1);
-  $("keyUp").onclick = () => setBase(baseMidi + 1);
-  $("climbDown").onclick = () => setClimb(climb - 1);
-  $("climbUp").onclick = () => setClimb(climb + 1);
-  $("speedDown").onclick = () => setSpeed(speed - 10);
-  $("speedUp").onclick = () => setSpeed(speed + 10);
-  $("go").onclick = () => (running ? stop("Stopped") : start(EXERCISES.map((_, i) => i)));
+  function setSegments() {
+    $("segments").style.gridTemplateColumns = `repeat(${selected.length}, 1fr)`;
+    $("segments").innerHTML = selected.map(() => "<span><i></i></span>").join("");
+    $("go").textContent = selected.length > 1 ? "Start session" : "Start exercise";
+  }
+
+  // ---------- Settings ----------
+  function renderSettings() {
+    $("keyVal").textContent = label(settings.base);
+    $("climbVal").textContent = settings.climb;
+    $("speedVal").textContent = `${settings.speed}%`;
+    $("speak").setAttribute("aria-checked", String(settings.speak));
+  }
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const change = (fn) => () => { if (running) return; fn(); renderSettings(); if (selected.length) showExercise(selected[0]); };
+  $("keyDown").onclick = change(() => (settings.base = clamp(settings.base - 1, 36, 72)));
+  $("keyUp").onclick = change(() => (settings.base = clamp(settings.base + 1, 36, 72)));
+  $("climbDown").onclick = change(() => (settings.climb = clamp(settings.climb - 1, 1, 14)));
+  $("climbUp").onclick = change(() => (settings.climb = clamp(settings.climb + 1, 1, 14)));
+  $("speedDown").onclick = change(() => (settings.speed = clamp(settings.speed - 10, 50, 150)));
+  $("speedUp").onclick = change(() => (settings.speed = clamp(settings.speed + 10, 50, 150)));
+  $("speak").onclick = () => { settings.speak = !settings.speak; renderSettings(); };
+  $("gear").onclick = () => { if (!running) $("settings").hidden = !$("settings").hidden; };
+  $("go").onclick = () => (running ? stop() : start());
+
+  // ?start=all (default) or ?start=2 for a single exercise
+  const param = new URLSearchParams(location.search).get("start");
+  selected = param !== null && param !== "all" && EXERCISES[Number(param)] ? [Number(param)] : EXERCISES.map((_, i) => i);
+  setSegments();
+  renderSettings();
+  showExercise(selected[0]);
   drawSloths();
-  render();
+  animate();
 </script>
 </body>
 </html>

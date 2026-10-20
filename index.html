@@ -4,287 +4,101 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#fbf6f2">
-<title>Pitch Test</title>
+<meta name="apple-mobile-web-app-title" content="Mariah">
+<meta name="theme-color" content="#f7f3ef">
+<title>Mariah · Voice Coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="theme.css">
 <link rel="icon" href="sloth.svg">
 <link rel="apple-touch-icon" href="sloth.svg">
 <style>
-  .note { text-align: center; margin-top: -6px; }
-  .note .name { font-size: 76px; font-weight: 800; line-height: 1; letter-spacing: -1px; min-height: 76px; }
-  .note .name small { font-size: 30px; font-weight: 700; color: var(--muted); margin-left: 2px; }
-  .note .hz { color: var(--muted); font-size: 14px; margin-top: 6px; font-variant-numeric: tabular-nums; }
-  .meter { position: relative; width: 100%; height: 34px; border-radius: 999px; background: var(--surface); overflow: hidden; }
-  .meter .zone { position: absolute; top: 0; bottom: 0; left: 25%; width: 50%; background: rgba(140, 196, 166, .22); }
-  .meter .center { position: absolute; top: 6px; bottom: 6px; left: 50%; width: 2px; margin-left: -1px; border-radius: 2px; background: var(--ok); opacity: .7; }
-  .meter .needle { position: absolute; top: 5px; bottom: 5px; left: 50%; width: 24px; margin-left: -12px; border-radius: 999px; background: var(--muted); transition: left 60ms linear, background 120ms; opacity: 0; box-shadow: 0 2px 8px rgba(90, 70, 80, .15); }
-  .labels { width: 100%; display: flex; justify-content: space-between; color: var(--muted); font-size: 12.5px; font-weight: 600; margin-top: -10px; padding: 0 8px; }
-  canvas { width: 100%; height: 130px; display: block; border-radius: 24px; background: var(--surface); }
-  .caption { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: -10px; }
-  .target { display: flex; align-items: center; gap: 10px; }
-  .target .label { color: var(--muted); font-size: 14px; font-weight: 700; }
-  .target .tnote { font-size: 22px; font-weight: 800; min-width: 52px; text-align: center; font-variant-numeric: tabular-nums; }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: .01em; }
+  .hero { position: relative; overflow: hidden; padding: 22px 20px 20px; background: linear-gradient(160deg, #fff 0%, #fbf1f3 100%); }
+  .hero .copy { position: relative; z-index: 1; max-width: 62%; display: flex; flex-direction: column; gap: 6px; }
+  .hero .h2 { font-size: 23px; }
+  .hero .btn { margin-top: 14px; align-self: flex-start; }
+  .hero .art { position: absolute; right: 6px; top: -2px; width: 140px; height: 168px; }
+  .hero .pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
 </style>
 </head>
 <body>
-<main>
-  <div class="topbar">
-    <div class="wordmark"><span class="mini" data-sloth="happy" data-bow="no"></span>Mariah</div>
-    <nav class="switch"><span>Pitch</span><a href="warmup.html">Workout</a></nav>
+<main class="app">
+  <div class="top">
+    <span class="brand">Mariah</span>
+    <span class="pill" id="streakPill" hidden></span>
   </div>
 
-  <div class="hero">
-    <div class="bubble" id="verdict">Pick a note, play it, then sing it back to me</div>
-    <div class="cloud bob"><div id="mascot" data-sloth="happy"></div></div>
+  <div>
+    <div class="eyebrow" id="date"></div>
+    <h1 id="greet">Good evening</h1>
   </div>
 
-  <div class="note">
-    <div class="name" id="name"></div>
-    <div class="hz" id="hz">Tap Start, then sing</div>
-  </div>
+  <section class="card hero">
+    <div class="art" data-sloth="happy"></div>
+    <div class="copy">
+      <span class="eyebrow">Today's warmup</span>
+      <span class="h2">Power workout</span>
+      <span class="sub" id="heroMeta">4 exercises</span>
+      <a class="btn accent" href="warmup.html?start=all">Start session</a>
+    </div>
+  </section>
 
-  <div class="meter" aria-hidden="true">
-    <div class="zone"></div>
-    <div class="center"></div>
-    <div class="needle" id="needle"></div>
-  </div>
-  <div class="labels"><span>too low</span><span>on it</span><span>too high</span></div>
+  <section class="stats">
+    <div class="card stat"><div class="v" id="sStreak">0</div><div class="l">Day streak</div></div>
+    <div class="card stat"><div class="v" id="sWeek">0<small>min</small></div><div class="l">This week</div></div>
+    <div class="card stat"><div class="v" id="sAcc">–</div><div class="l">Last accuracy</div></div>
+  </section>
 
-  <div class="target">
-    <span class="label">Match</span>
-    <button class="round" id="down" aria-label="Lower note">−</button>
-    <span class="tnote" id="tnote">C4</span>
-    <button class="round" id="up" aria-label="Higher note">+</button>
-    <button class="pill" id="play">▶ Play note</button>
-  </div>
+  <section class="section">
+    <div class="section-head"><h2>Exercises</h2><a href="warmup.html">Customize</a></div>
+    <div class="list" id="exList"></div>
+  </section>
 
-  <canvas id="trace" aria-label="Your pitch over the last few seconds"></canvas>
-  <div class="caption">Your last 6 seconds. A steady note is a flat line.</div>
+  <section class="section">
+    <h2>Tools</h2>
+    <div class="list">
+      <a class="row" href="tuner.html">
+        <span class="badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h2M8 8v8M12 5v14M16 9v6M20 11v2"/></svg></span>
+        <span class="grow"><div class="title">Pitch tuner</div><div class="meta">Match a note and see how close you are</div></span>
+        <span class="chev">›</span>
+      </a>
+    </div>
+  </section>
 
-  <div class="error" id="error"></div>
-  <button class="go" id="start">Start</button>
-
-  <p class="hint">Hold your phone about an arm's length away and tap <b>Allow</b> when Safari asks for the mic. No sound? Check the silent switch. Nothing is recorded or saved.</p>
+  <p class="hint">🎧 <b>Wired earbuds recommended.</b> The piano plays along with you, and earbuds keep the mic hearing only your voice. Nothing is recorded; your progress stays on this phone.</p>
 </main>
 
 <script type="module">
-  import { PitchDetector } from "https://cdn.jsdelivr.net/npm/pitchy@4.1.0/+esm";
-  import { createPiano } from "./piano.js";
-  import { drawSloths, setMood } from "./sloth.js";
-
-  const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
-  const IN_TUNE_CENTS = 25;    // within this many cents counts as "on it"
-  const CENTER_MS = 350;       // judge the average over this window so vibrato counts as on pitch
-  const MIN_CLARITY = 0.9;     // how sure Pitchy must be before we show a note
-  const MIN_HZ = 60, MAX_HZ = 1500;
-  const TRACE_SECONDS = 6;
+  import { EXERCISES, minutesFor, settings } from "./exercises.js";
+  import { stats } from "./store.js";
+  import { drawSloths } from "./sloth.js";
+  import { tabbar, greeting } from "./ui.js";
 
   const $ = (id) => document.getElementById(id);
-  const nameEl = $("name"), hzEl = $("hz"), verdictEl = $("verdict"),
-        needle = $("needle"), button = $("start"), errorEl = $("error"),
-        canvas = $("trace"), ctx = canvas.getContext("2d");
+  $("greet").textContent = greeting();
+  $("date").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
 
-  let piano, audioCtx, source, stream, analyser, detector, buffer, rafId, wakeLock;
-  let smoothedMidi = null;
-  let targetMidi = 60; // C4
-  try { targetMidi = Number(localStorage.getItem("targetMidi")) || 60; } catch {}
-  let playingUntil = 0; // ignore the mic while the reference note plays
-  let recent = []; // { t, midi } for the current note, used to find the vibrato's center
-  const trace = []; // { t, midi } points, midi may be null for silence
+  const total = EXERCISES.reduce((n, ex) => n + minutesFor(ex, settings.climb, settings.speed), 0);
+  $("heroMeta").textContent = `${EXERCISES.length} exercises · about ${Math.round(total)} min`;
 
-  function midiFromHz(hz) { return 69 + 12 * Math.log2(hz / 440); }
-  function noteLabel(midi) {
-    const n = Math.round(midi);
-    return { letter: NOTES[((n % 12) + 12) % 12], octave: Math.floor(n / 12) - 1 };
-  }
+  $("exList").innerHTML = EXERCISES.map((ex, i) => `
+    <a class="row" href="warmup.html?start=${i}">
+      <span class="badge">${i + 1}</span>
+      <span class="grow"><div class="title">${ex.name}</div><div class="meta">“${ex.sound}” · ${ex.desc}</div></span>
+      <span class="meta">${Math.max(1, Math.round(minutesFor(ex, settings.climb, settings.speed)))} min</span>
+    </a>`).join("");
 
-  function ensureAudio() {
-    if (!audioCtx || audioCtx.state === "closed") {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    return audioCtx.resume();
-  }
+  const s = stats();
+  $("sStreak").textContent = s.streak;
+  $("sWeek").innerHTML = `${s.weekMinutes}<small>min</small>`;
+  $("sAcc").innerHTML = s.lastAccuracy === null ? "–" : `${s.lastAccuracy}<small>%</small>`;
+  if (s.streak > 1) { $("streakPill").hidden = false; $("streakPill").textContent = `🔥 ${s.streak} days`; }
 
-  function showTarget() {
-    const { letter, octave } = noteLabel(targetMidi);
-    $("tnote").textContent = `${letter}${octave}`;
-    try { localStorage.setItem("targetMidi", String(targetMidi)); } catch {}
-  }
-
-  function setTarget(midi) {
-    targetMidi = Math.max(36, Math.min(84, midi)); // C2 to C6
-    showTarget();
-  }
-
-  async function playNote() {
-    await ensureAudio();
-    piano ??= createPiano(audioCtx);
-    const dur = 1.5;
-    await piano.preload([targetMidi]);
-    piano.play(targetMidi, audioCtx.currentTime + 0.02, dur);
-    playingUntil = performance.now() + dur * 1000 + 400;
-  }
-
-  async function start() {
-    errorEl.textContent = "";
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        // Turn off phone call processing, which fights against singing
-        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
-      });
-    } catch (e) {
-      errorEl.textContent = "The microphone is blocked. In Safari, tap the \"aA\" button in the address bar, open Website Settings, set Microphone to Allow, then reload.";
-      return;
-    }
-    await ensureAudio();
-    source = audioCtx.createMediaStreamSource(stream);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 2048;
-    source.connect(analyser);
-    buffer = new Float32Array(analyser.fftSize);
-    detector = PitchDetector.forFloat32Array(analyser.fftSize);
-    detector.minVolumeDecibels = -45;
-
-    try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {}
-
-    button.textContent = "Stop";
-    button.classList.add("stop");
-    hzEl.textContent = "Listening… sing a note";
-    loop();
-  }
-
-  function stop() {
-    cancelAnimationFrame(rafId);
-    stream?.getTracks().forEach((t) => t.stop());
-    source?.disconnect();
-    wakeLock?.release?.();
-    wakeLock = null;
-    smoothedMidi = null;
-    recent = [];
-    button.textContent = "Start";
-    button.classList.remove("stop");
-    showSilence("Stopped. Tap Start to go again");
-    say("Nice singing! Tap Start anytime");
-    mascot("sleepy");
-  }
-
-  let mood = "happy";
-  function mascot(m) { if (m !== mood) { mood = m; setMood($("mascot"), m); } }
-  function say(text, kind = "") {
-    if (verdictEl.textContent !== text) verdictEl.textContent = text;
-    verdictEl.className = "bubble " + kind;
-  }
-
-  function showSilence(msg) {
-    nameEl.textContent = "";
-    hzEl.textContent = msg;
-    needle.style.opacity = 0;
-  }
-
-  function loop() {
-    analyser.getFloatTimeDomainData(buffer);
-    const [hz, clarity] = detector.findPitch(buffer, audioCtx.sampleRate);
-    const now = performance.now();
-
-    if (now < playingUntil) {
-      smoothedMidi = null;
-      recent = [];
-      showSilence("Listen… then sing it back");
-      say("Listen to the note… 🎹");
-      mascot("happy");
-      trace.push({ t: now, midi: null });
-    } else if (clarity >= MIN_CLARITY && hz >= MIN_HZ && hz <= MAX_HZ) {
-      const midi = midiFromHz(hz);
-      // Light smoothing so the display isn't jittery, but reset on big jumps
-      smoothedMidi = smoothedMidi === null || Math.abs(midi - smoothedMidi) > 0.7
-        ? midi : smoothedMidi * 0.6 + midi * 0.4;
-      // Average the last fraction of a second so vibrato wobble cancels out
-      if (recent.length && Math.abs(midi - recent[recent.length - 1].midi) > 0.7) recent = [];
-      recent.push({ t: now, midi });
-      while (now - recent[0].t > CENTER_MS) recent.shift();
-      const centerMidi = recent.reduce((sum, p) => sum + p.midi, 0) / recent.length;
-      const cents = Math.round((centerMidi - targetMidi) * 100);
-      const { letter, octave } = noteLabel(centerMidi);
-
-      nameEl.innerHTML = `${letter}<small>${octave}</small>`;
-      const steps = Math.round(Math.abs(cents) / 100);
-      hzEl.textContent = steps >= 1
-        ? `${steps} half step${steps > 1 ? "s" : ""} ${cents > 0 ? "above" : "below"} the target`
-        : `${cents > 0 ? "+" : ""}${cents} cents from the target`;
-
-      let color, word, kind;
-      if (cents < -IN_TUNE_CENTS) { color = "var(--low)"; word = "A little low, lift it up"; kind = "low"; }
-      else if (cents > IN_TUNE_CENTS) { color = "var(--high)"; word = "A little high, ease down"; kind = "high"; }
-      else { color = "var(--ok)"; word = "You're on it! 💕"; kind = "ok"; }
-      say(word, kind);
-      mascot(kind === "ok" ? "proud" : "oops");
-      needle.style.background = color;
-      needle.style.opacity = 1;
-      needle.style.left = `${50 + Math.max(-50, Math.min(50, cents))}%`;
-      trace.push({ t: now, midi: smoothedMidi });
-    } else {
-      smoothedMidi = null;
-      recent = [];
-      showSilence("Listening… sing a note");
-      if (button.classList.contains("stop")) { say("I'm listening… sing for me"); mascot("sing"); }
-      trace.push({ t: now, midi: null });
-    }
-
-    while (trace.length && now - trace[0].t > TRACE_SECONDS * 1000) trace.shift();
-    drawTrace(now);
-    rafId = requestAnimationFrame(loop);
-  }
-
-  function drawTrace(now) {
-    const dpr = window.devicePixelRatio || 1;
-    const w = canvas.clientWidth, h = canvas.clientHeight;
-    if (canvas.width !== w * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, w, h);
-
-    const sung = trace.filter((p) => p.midi !== null);
-    if (!sung.length && now > playingUntil) return;
-    // Center the view on the note you're matching, showing 3 semitones above and below
-    const mid = targetMidi;
-    const span = 3;
-    const y = (m) => h / 2 - ((m - mid) / span) * (h / 2);
-    const x = (t) => w - ((now - t) / (TRACE_SECONDS * 1000)) * w;
-
-    // Note grid lines
-    ctx.font = "11px Nunito, -apple-system, sans-serif";
-    for (let m = mid - span; m <= mid + span; m++) {
-      ctx.strokeStyle = m === mid ? "rgba(140,196,166,.8)" : "rgba(90,70,80,.07)";
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(0, y(m)); ctx.lineTo(w, y(m)); ctx.stroke();
-      const { letter, octave } = noteLabel(m);
-      ctx.fillStyle = "rgba(90,70,80,.35)";
-      ctx.fillText(`${letter}${octave}`, 6, y(m) - 3);
-    }
-
-    // Pitch line, broken wherever there was silence
-    ctx.strokeStyle = "#c27d92";
-    ctx.lineWidth = 3;
-    ctx.lineJoin = "round";
-    ctx.beginPath();
-    let drawing = false;
-    for (const p of trace) {
-      if (p.midi === null) { drawing = false; continue; }
-      const px = x(p.t), py = y(p.midi);
-      if (!drawing) { ctx.moveTo(px, py); drawing = true; } else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-  }
-
-  $("down").addEventListener("click", () => setTarget(targetMidi - 1));
-  $("up").addEventListener("click", () => setTarget(targetMidi + 1));
-  $("play").addEventListener("click", playNote);
-  showTarget();
   drawSloths();
-
-  button.addEventListener("click", () => (button.classList.contains("stop") ? stop() : start()));
+  tabbar("today");
 </script>
 </body>
 </html>
