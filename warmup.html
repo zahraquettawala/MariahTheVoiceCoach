@@ -24,7 +24,8 @@
   .lane-card { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
   .lane-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-3); }
   .lane-top .pill { font-variant-numeric: tabular-nums; }
-  canvas { width: 100%; height: 210px; display: block; }
+  canvas { width: 100%; height: 190px; display: block; }
+  #keys { height: 64px; }
   .history { display: flex; flex-wrap: wrap; gap: 4px; min-height: 8px; }
   .history span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
   .history span.ok { background: var(--ok); } .history span.low { background: var(--low); } .history span.high { background: var(--high); }
@@ -71,6 +72,7 @@
   <section class="card lane-card">
     <div class="lane-top"><span class="pill" id="keyPill">Key –</span><span id="loopInfo">Ready</span></div>
     <canvas id="lane" aria-label="Target notes and your pitch"></canvas>
+    <canvas id="keys" aria-label="Piano keyboard showing the note to sing"></canvas>
     <div class="legend"><span><i style="background:var(--ok)"></i>On pitch</span><span><i style="background:var(--low)"></i>Flat</span><span><i style="background:var(--high)"></i>Sharp</span><span><i style="background:var(--ink)"></i>Your voice</span></div>
   </section>
 
@@ -105,6 +107,7 @@
   import { drawSloths, setMood } from "./sloth.js";
   import { EXERCISES, layout, keysFor, minutesFor, settings } from "./exercises.js";
   import { saveSession } from "./store.js";
+  import { drawKeys, keyRange } from "./keys.js";
 
   const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
   const IN_TUNE_CENTS = 25;
@@ -121,6 +124,7 @@
   let selected = [];        // exercise indexes for this session
   let lane = null;          // what the pitch lane is showing
   let done = new Set();
+  let kb = { lo: 48, hi: 71 }; // keyboard range for the current exercise
 
   // ---------- Pitch lane ----------
   const canvas = $("lane"), g = canvas.getContext("2d");
@@ -176,7 +180,24 @@
       g.beginPath(); g.moveTo(x(lane.pos), 4); g.lineTo(x(lane.pos), h - 4); g.stroke();
     }
   }
-  const animate = () => { drawLane(); requestAnimationFrame(animate); };
+  function drawKeyboard() {
+    let lit = null, voice = null, voiceKind = "";
+    if (lane && lane.pos !== null) {
+      const now = lane.events.find((e) => lane.pos >= e.start && lane.pos < e.start + e.beats);
+      lit = now?.midi ?? null;
+      const last = lane.voice[lane.voice.length - 1];
+      if (last && last.midi !== null) {
+        voice = last.midi;
+        if (last.target) {
+          let c = (last.midi - last.target) * 100;
+          c -= 1200 * Math.round(c / 1200);
+          voiceKind = Math.abs(c) <= IN_TUNE_CENTS ? "ok" : c < 0 ? "low" : "high";
+        }
+      }
+    }
+    drawKeys($("keys"), { ...kb, lit, voice, voiceKind });
+  }
+  const animate = () => { drawLane(); drawKeyboard(); requestAnimationFrame(animate); };
 
   // ---------- Audio ----------
   async function ensureAudio() {
@@ -262,6 +283,8 @@
     $("exDesc").textContent = `“${ex.sound}” · ${ex.desc}`;
     const key = settings.base + ex.offset;
     lane = { ...layout(ex, key), key, voice: [], results: null, pos: null };
+    const steps = [...ex.cue, ...ex.sing].map(([st]) => st).filter((st) => st !== null);
+    kb = keyRange(key + Math.min(...steps), key + settings.climb + Math.max(...steps));
     $("keyPill").textContent = `Key ${label(key)}`;
     renderList(i);
   }
