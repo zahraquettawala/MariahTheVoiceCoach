@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Mariah">
 <meta name="theme-color" content="#f7f3ef">
-<title>Mariah · Voice Coach</title>
+<title>Mariah · Vocal Coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,9 +15,10 @@
 <link rel="apple-touch-icon" href="sloth.svg">
 <style>
   .top { display: flex; align-items: center; justify-content: space-between; }
-  .brand { font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: .01em; }
+  .brand { font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: .01em; display: flex; align-items: baseline; gap: 8px; }
+  .brand .tag { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
   .hero { position: relative; overflow: hidden; padding: 22px 20px 20px; background: linear-gradient(160deg, #fff 0%, #fbf1f3 100%); }
-  .hero .copy { position: relative; z-index: 1; max-width: 62%; display: flex; flex-direction: column; gap: 6px; }
+  .hero .copy { position: relative; z-index: 1; max-width: 60%; display: flex; flex-direction: column; gap: 6px; }
   .hero .h2 { font-size: 23px; }
   .hero .btn { margin-top: 14px; align-self: flex-start; }
   .hero .art { position: absolute; right: 6px; top: -2px; width: 140px; height: 168px; }
@@ -27,20 +28,21 @@
 <body>
 <main class="app">
   <div class="top">
-    <span class="brand">Mariah</span>
+    <span class="brand">Mariah <span class="tag">Vocal coach</span></span>
     <span class="pill" id="streakPill" hidden></span>
   </div>
 
   <div>
     <div class="eyebrow" id="date"></div>
     <h1 id="greet">Good evening</h1>
+    <p class="sub" style="margin:6px 0 0">I'm Mariah, your vocal coach. Let's train your voice.</p>
   </div>
 
   <section class="card hero">
     <div class="art" data-sloth="happy"></div>
     <div class="copy">
-      <span class="eyebrow">Today's warmup</span>
-      <span class="h2">Power workout</span>
+      <span class="eyebrow">Today's training</span>
+      <span class="h2">Voice training with Mariah</span>
       <span class="sub" id="heroMeta">4 exercises</span>
       <a class="btn accent" href="warmup.html?start=all">Start session</a>
     </div>

@@ -1,20 +1,22 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mariah the sloth">
-  <ellipse cx="100" cy="108" rx="80" ry="74" fill="#bfa391"/>
-  <ellipse cx="100" cy="110" rx="74" ry="68" fill="#cdb4a3"/>
-  <path d="M100 58c-44 0-66 24-66 52s24 54 66 54 66-26 66-54-22-52-66-52z" fill="#f8ece3"/>
-  <ellipse cx="72" cy="104" rx="22" ry="17" fill="#dcc3b3" transform="rotate(-18 72 104)"/>
-  <ellipse cx="128" cy="104" rx="22" ry="17" fill="#dcc3b3" transform="rotate(18 128 104)"/>
-  <circle cx="72" cy="102" r="11.5" fill="#3b2a2f"/>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="100" cy="108" rx="80" ry="74" fill="#b29a89"/>
+  <ellipse cx="100" cy="110" rx="74" ry="68" fill="#c9b2a2"/>
+  <path d="M100 58c-44 0-66 24-66 52s24 54 66 54 66-26 66-54-22-52-66-52z" fill="#f6ebe2"/>
+  <ellipse cx="72" cy="104" rx="22" ry="17" fill="#d9c2b2" transform="rotate(-18 72 104)"/>
+  <ellipse cx="128" cy="104" rx="22" ry="17" fill="#d9c2b2" transform="rotate(18 128 104)"/>
+  <circle cx="72" cy="102" r="11.5" fill="#33262b"/>
     <circle cx="76" cy="97.5" r="4.2" fill="#fff"/>
-    <circle cx="68.5" cy="106" r="1.8" fill="#fff" opacity=".8"/><circle cx="128" cy="102" r="11.5" fill="#3b2a2f"/>
+    <circle cx="68.5" cy="106" r="1.8" fill="#fff" opacity=".8"/><circle cx="128" cy="102" r="11.5" fill="#33262b"/>
     <circle cx="132" cy="97.5" r="4.2" fill="#fff"/>
     <circle cx="124.5" cy="106" r="1.8" fill="#fff" opacity=".8"/>
-  <ellipse cx="58" cy="128" rx="11" ry="7" fill="#f5b9c6" opacity=".8"/>
-  <ellipse cx="142" cy="128" rx="11" ry="7" fill="#f5b9c6" opacity=".8"/>
-  <ellipse cx="100" cy="117" rx="9" ry="6.5" fill="#6e5359"/>
+  <ellipse cx="58" cy="128" rx="11" ry="7" fill="#efb3c0" opacity=".75"/>
+  <ellipse cx="142" cy="128" rx="11" ry="7" fill="#efb3c0" opacity=".75"/>
+  <ellipse cx="100" cy="117" rx="9" ry="6.5" fill="#6a5157"/>
   <ellipse cx="97" cy="115" rx="3" ry="1.8" fill="#fff" opacity=".45"/>
-  <path d="M90 129q10 10 20 0" stroke="#6e5359" stroke-width="3.4" stroke-linecap="round" fill="none"/>
-  <path d="M126 50c9-12 27-8 24 5-2 9-15 7-24 1z" fill="#eeaabd"/>
-  <path d="M122 52c-12-7-25 1-19 12 4 7 15 2 19-8z" fill="#eeaabd"/>
-  <circle cx="124" cy="52" r="5.5" fill="#e094ab"/>
-</svg>
+  <path d="M90 129q10 10 20 0" stroke="#6a5157" stroke-width="3.4" stroke-linecap="round" fill="none"/><g transform="translate(130 150) rotate(-32) scale(1.5)">
+    <path d="M-5 11h10l-2 30a3 3 0 0 1-6 0z" fill="#4a3d43"/>
+    <rect x="-6.5" y="8" width="13" height="5" rx="1.5" fill="#b5677d"/>
+    <circle r="10" fill="#e4d8db"/>
+    <path d="M-7-4h14M-9 0h18M-7 4h14M-4-8v16M0-10v20M4-8v16" stroke="#b8a9ae" stroke-width="1" opacity=".8"/>
+    <circle r="10" fill="none" stroke="#a8979c" stroke-width="1.5"/>
+    <circle cx="-3.5" cy="-4" r="2.5" fill="#fff" opacity=".7"/>
+  </g></svg>

@@ -1,6 +1,6 @@
 // Mariah the sloth, drawn as inline SVG so she can change mood.
 // mood: "happy" (default), "sing", "proud", "oops", "sleepy"
-// pose: "hang" (full body on a branch, default) or "head"
+// pose: "hang" (full body on a branch, default) or "head". Both come with her microphone.
 
 const FUR = "#c9b2a2", FUR_DARK = "#b29a89", FACE = "#f6ebe2", PATCH = "#d9c2b2",
   EYE = "#33262b", NOSE = "#6a5157", CHEEK = "#efb3c0", CLAW = "#8c7568",
@@ -24,6 +24,18 @@ function mouth(mood) {
   if (mood === "oops") return `<path d="M91 134q4.5-4 9 0t9 0" stroke="${NOSE}" stroke-width="3.2" stroke-linecap="round" fill="none"/>`;
   if (mood === "sleepy") return `<ellipse cx="100" cy="132" rx="4" ry="3.5" fill="#94586a"/>`;
   return `<path d="M90 129q10 10 20 0" stroke="${NOSE}" stroke-width="3.4" stroke-linecap="round" fill="none"/>`;
+}
+
+// Her microphone, grille at (x, y), handle pointing along `angle`
+function mic(x, y, angle, scale = 1) {
+  return `<g transform="translate(${x} ${y}) rotate(${angle}) scale(${scale})">
+    <path d="M-5 11h10l-2 30a3 3 0 0 1-6 0z" fill="#4a3d43"/>
+    <rect x="-6.5" y="8" width="13" height="5" rx="1.5" fill="#b5677d"/>
+    <circle r="10" fill="#e4d8db"/>
+    <path d="M-7-4h14M-9 0h18M-7 4h14M-4-8v16M0-10v20M4-8v16" stroke="#b8a9ae" stroke-width="1" opacity=".8"/>
+    <circle r="10" fill="none" stroke="#a8979c" stroke-width="1.5"/>
+    <circle cx="-3.5" cy="-4" r="2.5" fill="#fff" opacity=".7"/>
+  </g>`;
 }
 
 // The head, drawn in a 200x200 box
@@ -62,12 +74,14 @@ function hanging(mood) {
   <ellipse cx="100" cy="158" rx="44" ry="50" fill="${FUR_DARK}"/>
   <ellipse cx="100" cy="160" rx="39" ry="45" fill="${FUR}"/>
   <ellipse cx="100" cy="168" rx="24" ry="30" fill="#dccabd" opacity=".7"/>
-  <g transform="translate(52 50) scale(.48)">${head(mood)}</g>`;
+  <g transform="translate(52 50) scale(.48)">${head(mood)}</g>
+  <path d="M160 28c4 24-14 42-26 69" stroke="#4a3d43" stroke-width="1.6" fill="none"/>
+  ${mic(119, 122, 210, .72)}`;
 }
 
 export function slothSVG(mood = "happy", { pose = "hang" } = {}) {
   if (pose === "head") {
-    return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${head(mood)}</svg>`;
+    return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${head(mood)}${mic(130, 150, -32, 1.5)}</svg>`;
   }
   return `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${hanging(mood)}</svg>`;
 }

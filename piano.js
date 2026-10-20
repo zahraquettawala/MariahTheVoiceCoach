@@ -7,6 +7,8 @@ const LOW = 36, HIGH = 84; // C2 to C6
 
 export function createPiano(ctx, baseUrl = "piano/") {
   const buffers = new Map(); // sample midi -> Promise<AudioBuffer | null>
+  const live = new Set();     // notes scheduled or sounding, so stopAll can silence them
+  let generation = 0;         // bumped by stopAll so notes still loading never start
 
   function sampleFor(midi) {
     return Math.max(LOW, Math.min(HIGH, Math.round(midi / 3) * 3));
@@ -31,7 +33,9 @@ export function createPiano(ctx, baseUrl = "piano/") {
   // Play one note at audio time `when` for `duration` seconds
   async function play(midi, when = ctx.currentTime, duration = 1.2, volume = 0.9) {
     const s = sampleFor(midi);
+    const gen = generation;
     const buffer = await load(s);
+    if (gen !== generation) return;
     const out = ctx.createGain();
     out.connect(ctx.destination);
     const release = 0.25;
@@ -46,6 +50,7 @@ export function createPiano(ctx, baseUrl = "piano/") {
       src.connect(out);
       src.start(when);
       src.stop(when + duration + release);
+      track(src, out);
     } else {
       // Samples failed to load: fall back to a soft synth tone
       const osc = ctx.createOscillator();
@@ -56,8 +61,28 @@ export function createPiano(ctx, baseUrl = "piano/") {
       osc.connect(g).connect(out);
       osc.start(when);
       osc.stop(when + duration + release);
+      track(osc, out);
     }
   }
 
-  return { play, preload };
+  function track(node, out) {
+    const note = { node, out };
+    live.add(note);
+    node.onended = () => live.delete(note);
+  }
+
+  // Silence everything now, including notes scheduled for later
+  function stopAll() {
+    generation++;
+    const t = ctx.currentTime;
+    for (const { node, out } of live) {
+      out.gain.cancelScheduledValues(t);
+      out.gain.setValueAtTime(out.gain.value, t);
+      out.gain.linearRampToValueAtTime(0, t + 0.05);
+      try { node.stop(t + 0.06); } catch {}
+    }
+    live.clear();
+  }
+
+  return { play, preload, stopAll };
 }
