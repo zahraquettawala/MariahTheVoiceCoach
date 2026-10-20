@@ -38,3 +38,9 @@ export function speak(text) {
 export function hush() {
   if (supported) speechSynthesis.cancel();
 }
+
+// iPhones only allow speech that starts from a tap. Call this inside the tap handler
+// when the real line will be spoken a moment later.
+export function unlock() {
+  if (supported) speechSynthesis.speak(new SpeechSynthesisUtterance(""));
+}
