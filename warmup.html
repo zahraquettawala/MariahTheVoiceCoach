@@ -43,6 +43,7 @@
   [aria-disabled="true"] { opacity: .45; pointer-events: none; }
   .stage { background: var(--panel); border-radius: 14px; padding: 16px 12px; display: flex; flex-direction: column; gap: 10px; }
   .now { text-align: center; font-size: 15px; color: var(--muted); min-height: 20px; }
+  .sound { text-align: center; font-size: 22px; font-weight: 700; color: var(--accent); min-height: 28px; }
   .key { text-align: center; font-size: 56px; font-weight: 800; line-height: 1; }
   .feedback { text-align: center; font-size: 26px; font-weight: 800; min-height: 32px; }
   .feedback.ok { color: var(--ok); } .feedback.low { color: var(--low); } .feedback.high { color: var(--high); }
@@ -95,6 +96,7 @@
 
   <div class="stage">
     <div class="now" id="now">Pick an exercise, or do the whole workout</div>
+    <div class="sound" id="sound"></div>
     <div class="key" id="key">–</div>
     <div class="notes" id="notes"></div>
     <div class="feedback" id="feedback"></div>
@@ -127,13 +129,13 @@
   // Patterns and speeds follow the Aussie Vocal Coach "Daily Vocal Exercises" workout.
   const RUN = [0, 2, 4, 5, 7, 5, 4, 2, 0, 2, 4, 5, 7, 5, 4, 2].map((s) => [s, 0.5]);
   const EXERCISES = [
-    { name: "Fifths", desc: "1 · 5-5 · 1 · 5 · 1, slow and steady", bpm: 60, offset: 0,
+    { name: "Fifths", sound: "Hum (mm)", desc: "1 · 5-5 · 1 · 5 · 1, slow and steady", bpm: 60, offset: 0,
       cue: [[0, 2]], sing: [[0, 1], [7, 0.5], [7, 0.5], [0, 1], [7, 1], [0, 2]] },
-    { name: "Fifths, part 2", desc: "1 · 5 · 1 · 5 · 1, one note per beat", bpm: 60, offset: 2,
+    { name: "Fifths, part 2", sound: "Nay", desc: "1 · 5 · 1 · 5 · 1, one note per beat", bpm: 60, offset: 2,
       cue: [], sing: [[0, 1], [7, 1], [0, 1], [7, 1], [0, 2], [null, 2]] },
-    { name: "5-note scale", desc: "Up the scale, hold the top, back down", bpm: 60, offset: 0,
+    { name: "5-note scale", sound: "Mah", desc: "Up the scale, hold the top, back down", bpm: 60, offset: 0,
       cue: [[0, 2]], sing: [[0, 0.5], [2, 0.5], [4, 0.5], [5, 0.5], [7, 2.5], [5, 0.5], [4, 0.5], [2, 0.5], [0, 1]] },
-    { name: "Fast runs", desc: "Quick 5-note runs, twice per key", bpm: 110, offset: 2,
+    { name: "Fast runs", sound: "Ah", desc: "Quick 5-note runs, twice per key", bpm: 110, offset: 2,
       cue: [[0, 2], [null, 1.75]], sing: [...RUN, [0, 2], [null, 1.5], ...RUN, [0, 1.5], [null, 0.5]] },
   ];
 
@@ -160,7 +162,7 @@
       const b = document.createElement("button");
       b.className = "ex";
       b.id = `ex${i}`;
-      b.innerHTML = `<span class="num">${i + 1}</span><span class="txt"><div class="nm">${ex.name}</div><div class="ds">${ex.desc}</div></span>`;
+      b.innerHTML = `<span class="num">${i + 1}</span><span class="txt"><div class="nm">${ex.name}</div><div class="ds">“${ex.sound}” · ${ex.desc}</div></span>`;
       b.onclick = () => { if (!running) start([i]); };
       $("exercises").append(b);
     });
@@ -271,6 +273,7 @@
     $("history").innerHTML = "";
     $("feedback").textContent = "";
     $("now").textContent = `Exercise ${index + 1}: ${ex.name} · loading piano…`;
+    say(`Exercise ${index + 1}. ${ex.name}, on ${ex.sound.replace(/ \(.*\)/, "")}.`);
     await piano.preload(keys.flatMap((k) => layout(ex, k).events.map((e) => e.midi)));
 
     let t = ctx.currentTime + 0.3;
@@ -280,6 +283,7 @@
       const scoredEvents = events.filter((e) => e.scored);
       $("now").textContent = `Exercise ${index + 1}: ${ex.name} · ${loop + 1} of ${keys.length}`;
       $("key").textContent = label(key);
+      $("sound").textContent = `“${ex.sound}”`;
       drawNotes(events);
 
       for (const e of events) piano.play(e.midi, t + e.start * beat, e.beats * beat * 0.95, e.scored ? 0.65 : 0.85);
@@ -334,6 +338,7 @@
       if (running && n < list.length - 1) {
         $("now").textContent = "Quick breather";
         $("key").textContent = "💧";
+        $("sound").textContent = "";
         $("feedback").textContent = "";
         $("notes").innerHTML = "";
         say("Nice. Next exercise.");
