@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#111318">
+<meta name="theme-color" content="#fff5f7">
 <title>Pitch Test</title>
 <style>
   :root {
@@ -51,10 +51,17 @@
   .target .play { font-size: 17px; padding: 14px 10px; flex: 1; background: #2a2e39; border-radius: 12px; }
   .error { color: var(--high); text-align: center; font-size: 15px; min-height: 0; }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<link rel="icon" href="sloth.svg">
+<link rel="apple-touch-icon" href="sloth.svg">
 </head>
 <body>
 <main>
-  <nav><span>Pitch test</span> · <a href="warmup.html">Warmup →</a></nav>
+  <div class="brand"><img src="sloth.svg" alt=""><div class="title">Mariah</div><div class="tag">your slow-and-steady voice coach</div></div>
+  <nav><span>Pitch test</span> · <a href="warmup.html">Workout →</a></nav>
 
   <div class="target">
     <span class="label">Match</span>
@@ -261,18 +268,18 @@
     const x = (t) => w - ((now - t) / (TRACE_SECONDS * 1000)) * w;
 
     // Note grid lines
-    ctx.font = "11px -apple-system, sans-serif";
+    ctx.font = "11px Nunito, -apple-system, sans-serif";
     for (let m = mid - span; m <= mid + span; m++) {
-      ctx.strokeStyle = m === mid ? "rgba(60,207,127,.5)" : "rgba(255,255,255,.08)";
+      ctx.strokeStyle = m === mid ? "rgba(95,191,147,.6)" : "rgba(74,43,58,.08)";
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(0, y(m)); ctx.lineTo(w, y(m)); ctx.stroke();
       const { letter, octave } = noteLabel(m);
-      ctx.fillStyle = "rgba(255,255,255,.35)";
+      ctx.fillStyle = "rgba(74,43,58,.4)";
       ctx.fillText(`${letter}${octave}`, 6, y(m) - 3);
     }
 
     // Pitch line, broken wherever there was silence
-    ctx.strokeStyle = "#8b7cf6";
+    ctx.strokeStyle = "#e8789b";
     ctx.lineWidth = 3;
     ctx.lineJoin = "round";
     ctx.beginPath();

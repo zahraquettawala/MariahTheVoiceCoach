@@ -1,0 +1,80 @@
+/* Soft pink theme shared by every page. Loaded after each page's own styles. */
+:root {
+  --bg: #fff5f7;
+  --bg2: #fde4ec;
+  --panel: #ffffff;
+  --panel2: #fbe6ee;
+  --text: #4a2b3a;
+  --muted: #9b7a88;
+  --accent: #e8789b;
+  --accent-deep: #d45c83;
+  --ok: #5fbf93;
+  --low: #f2a35e;
+  --high: #e5677a;
+  --line: rgba(74, 43, 58, .08);
+  --shadow: 0 6px 24px rgba(212, 92, 131, .10);
+}
+
+body {
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%) fixed;
+  color: var(--text);
+  font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+button { color: var(--text); font-family: inherit; }
+
+/* Cards */
+.controls, .stage, .tips, .ex, .target, .meter, canvas {
+  background: var(--panel) !important;
+  box-shadow: var(--shadow);
+  border-radius: 22px !important;
+}
+.row + .row { border-top-color: var(--line) !important; }
+
+/* Small round buttons */
+.step, .play, .after button, .patterns button {
+  background: var(--panel2) !important;
+  color: var(--accent-deep) !important;
+  border-radius: 999px !important;
+  font-weight: 800;
+}
+
+/* Big main button */
+.go, #start {
+  background: linear-gradient(135deg, #f29bb6, var(--accent-deep)) !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  box-shadow: 0 10px 24px rgba(212, 92, 131, .30);
+  letter-spacing: .2px;
+}
+.go.stop, #start.stop, button.stop {
+  background: #ffffff !important;
+  color: var(--accent-deep) !important;
+  box-shadow: inset 0 0 0 2px var(--accent), var(--shadow);
+}
+
+nav a { color: var(--accent-deep) !important; }
+nav span { color: var(--text) !important; }
+
+/* Mascot header */
+.brand { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 4px; }
+.brand img { width: 84px; height: 84px; filter: drop-shadow(0 6px 12px rgba(212, 92, 131, .18)); }
+.brand .title { font-size: 22px; font-weight: 800; letter-spacing: .3px; }
+.brand .tag { font-size: 13px; color: var(--muted); }
+
+/* Workout page */
+.ex .num { background: var(--panel2) !important; color: var(--accent-deep); }
+.ex.active { outline: 2px solid var(--accent) !important; }
+.ex.active .num { background: var(--accent) !important; color: #fff !important; }
+.ex.done .num { background: var(--ok) !important; color: #fff !important; }
+.n { background: var(--panel2) !important; }
+.n.cur { background: var(--accent) !important; }
+.n.ok { background: var(--ok) !important; } .n.low { background: var(--low) !important; } .n.high { background: var(--high) !important; }
+.n.miss { background: transparent !important; }
+.history span { background: var(--panel2); }
+.sound { color: var(--accent-deep) !important; }
+.toggle input { accent-color: var(--accent); }
+
+/* Pitch test page */
+.meter .zone { background: rgba(95, 191, 147, .18) !important; }
+.tips b { color: var(--text) !important; }
