@@ -1,31 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Mariah the sloth">
-  <!-- head fur -->
-  <ellipse cx="100" cy="108" rx="78" ry="72" fill="#b89a86"/>
-  <ellipse cx="100" cy="112" rx="70" ry="62" fill="#c9ad98"/>
-  <!-- face mask -->
-  <path d="M100 62c-38 0-60 22-60 50s22 52 60 52 60-24 60-52-22-50-60-50z" fill="#f6e7da"/>
-  <!-- eye patches -->
-  <path d="M46 108c4-16 22-22 36-14 8 5 6 18-4 24-14 8-36 6-32-10z" fill="#6b4f43"/>
-  <path d="M154 108c-4-16-22-22-36-14-8 5-6 18 4 24 14 8 36 6 32-10z" fill="#6b4f43"/>
-  <!-- sleepy happy eyes -->
-  <path d="M60 106q8-7 16 0" stroke="#2e1f1a" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-  <path d="M124 106q8-7 16 0" stroke="#2e1f1a" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-  <!-- cheeks -->
-  <ellipse cx="62" cy="132" rx="11" ry="7" fill="#f4a7b9" opacity=".75"/>
-  <ellipse cx="138" cy="132" rx="11" ry="7" fill="#f4a7b9" opacity=".75"/>
-  <!-- nose -->
-  <ellipse cx="100" cy="120" rx="11" ry="8" fill="#4a332b"/>
-  <ellipse cx="96" cy="117" rx="3.5" ry="2.2" fill="#fff" opacity=".5"/>
-  <!-- singing mouth -->
-  <ellipse cx="100" cy="142" rx="9" ry="11" fill="#7a3b4a"/>
-  <ellipse cx="100" cy="148" rx="6" ry="4.5" fill="#f08aa3"/>
-  <!-- little bow -->
-  <path d="M128 52c8-12 26-10 24 4-1 9-14 8-24 2z" fill="#f28fae"/>
-  <path d="M128 52c-2-14 12-22 20-12" fill="none"/>
-  <path d="M124 54c-12-6-24 2-18 12 4 7 14 2 18-8z" fill="#f28fae"/>
-  <circle cx="126" cy="54" r="5" fill="#e46f93"/>
-  <!-- music note -->
-  <path d="M170 34v26" stroke="#e46f93" stroke-width="4" stroke-linecap="round"/>
-  <path d="M170 34l14-5v10l-14 5z" fill="#e46f93"/>
-  <ellipse cx="165" cy="61" rx="7" ry="5.5" fill="#e46f93" transform="rotate(-20 165 61)"/>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mariah the sloth">
+  <ellipse cx="100" cy="108" rx="80" ry="74" fill="#bfa391"/>
+  <ellipse cx="100" cy="110" rx="74" ry="68" fill="#cdb4a3"/>
+  <path d="M100 58c-44 0-66 24-66 52s24 54 66 54 66-26 66-54-22-52-66-52z" fill="#f8ece3"/>
+  <ellipse cx="72" cy="104" rx="22" ry="17" fill="#dcc3b3" transform="rotate(-18 72 104)"/>
+  <ellipse cx="128" cy="104" rx="22" ry="17" fill="#dcc3b3" transform="rotate(18 128 104)"/>
+  <circle cx="72" cy="102" r="11.5" fill="#3b2a2f"/>
+    <circle cx="76" cy="97.5" r="4.2" fill="#fff"/>
+    <circle cx="68.5" cy="106" r="1.8" fill="#fff" opacity=".8"/><circle cx="128" cy="102" r="11.5" fill="#3b2a2f"/>
+    <circle cx="132" cy="97.5" r="4.2" fill="#fff"/>
+    <circle cx="124.5" cy="106" r="1.8" fill="#fff" opacity=".8"/>
+  <ellipse cx="58" cy="128" rx="11" ry="7" fill="#f5b9c6" opacity=".8"/>
+  <ellipse cx="142" cy="128" rx="11" ry="7" fill="#f5b9c6" opacity=".8"/>
+  <ellipse cx="100" cy="117" rx="9" ry="6.5" fill="#6e5359"/>
+  <ellipse cx="97" cy="115" rx="3" ry="1.8" fill="#fff" opacity=".45"/>
+  <path d="M90 129q10 10 20 0" stroke="#6e5359" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+  <path d="M126 50c9-12 27-8 24 5-2 9-15 7-24 1z" fill="#eeaabd"/>
+  <path d="M122 52c-12-7-25 1-19 12 4 7 15 2 19-8z" fill="#eeaabd"/>
+  <circle cx="124" cy="52" r="5.5" fill="#e094ab"/>
 </svg>
