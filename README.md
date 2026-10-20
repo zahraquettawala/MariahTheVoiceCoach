@@ -16,7 +16,7 @@ Wear wired earbuds so the mic hears you, not the piano. Within 25 cents of the t
 
 ## Code
 
-`exercises.js` defines the workout, `store.js` saves sessions on the phone (localStorage), `piano.js` plays the sampled piano, `sloth.js` draws Mariah, `ui.js` is the tab bar, and `theme.css` is the design system. No build step.
+`exercises.js` defines the workout, `store.js` saves sessions on the phone (localStorage), `piano.js` plays the sampled piano, `sloth.js` draws Mariah, `ui.js` is the tab bar, `voice.js` is her speaking voice (the phone's built-in one for now), `keys.js` draws the keyboard, and `theme.css` is the design system. No build step.
 
 Pitch detection runs in the browser with [Pitchy](https://github.com/ianprime0509/pitchy). Piano samples are from [tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments) (MIT). Nothing is recorded; practice history stays on your phone.
 

@@ -113,6 +113,7 @@
   import { EXERCISES, layout, keysFor, minutesFor, settings } from "./exercises.js";
   import { saveSession } from "./store.js";
   import { drawKeys, keyRange } from "./keys.js";
+  import { speak, hush } from "./voice.js";
 
   const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
   const IN_TUNE_CENTS = 25;
@@ -262,13 +263,16 @@
 
   function verdict(results) {
     const heard = results.filter((r) => r.kind !== "miss");
-    if (heard.length < results.length / 2) return { word: "Louder", line: "I can't quite hear you. Sing out a little more.", kind: "" };
+    if (heard.length < results.length / 2) return { said: "I can't quite hear you. Sing out a little more.", line: "I can't quite hear you. Sing out a little more.", kind: "" };
     const ok = heard.filter((r) => r.kind === "ok").length;
-    if (ok >= heard.length * 0.8) return { word: "Nice", line: ["Nice, right on pitch.", "Lovely. Keep going.", "Clean. Up we go."][Math.floor(Math.random() * 3)], kind: "ok" };
+    if (ok >= heard.length * 0.8) {
+      const line = ["Nice, right on pitch.", "Lovely. Keep going.", "Beautiful. Up we go.", "That's it, keep that up."][Math.floor(Math.random() * 4)];
+      return { said: line, line, kind: "ok" };
+    }
     const flat = heard.filter((r) => r.kind === "low").length, sharp = heard.filter((r) => r.kind === "high").length;
     return flat >= sharp
-      ? { word: "Flat", line: "A little flat. Think up as you sing.", kind: "low" }
-      : { word: "Sharp", line: "A little sharp. Relax and let it settle.", kind: "high" };
+      ? { said: ["You're a little flat. Lift it up.", "Just under. Think up."][Math.floor(Math.random() * 2)], line: "A little flat. Think up as you sing.", kind: "low" }
+      : { said: ["You're a little sharp. Ease off.", "Just over. Let it settle."][Math.floor(Math.random() * 2)], line: "A little sharp. Relax and let it settle.", kind: "high" };
   }
 
   function coach(text, kind = "", mood = null) {
@@ -278,11 +282,7 @@
   }
 
   function say(text) {
-    if (!settings.speak || !("speechSynthesis" in window)) return;
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.1;
-    speechSynthesis.speak(u);
+    if (settings.speak) speak(text);
   }
 
   // ---------- Session ----------
@@ -306,7 +306,7 @@
     showExercise(index);
     $("history").innerHTML = "";
     coach(`${ex.name} on “${ex.sound}”. Sing along with the piano.`, "", "sing");
-    say(`${ex.name}, on ${ex.sound}.`);
+    say(`Okay, ${ex.name.toLowerCase()} on "${ex.sound}". Sing along with me.`);
     await piano.preload(keys.flatMap((k) => layout(ex, k).events.map((e) => e.midi)));
     const seg = $("segments").children[selected.indexOf(index)].firstChild;
 
@@ -340,7 +340,7 @@
       lane.pos = null;
       const v = verdict(results);
       coach(v.line, v.kind, v.kind === "ok" ? "proud" : v.kind ? "oops" : "happy");
-      say(v.word);
+      say(v.said);
       setTimeout(() => running && !paused && setMood($("mascot"), "sing"), 1400);
       tally.hits += results.filter((r) => r.kind === "ok").length;
       tally.total += results.length;
@@ -376,7 +376,7 @@
       if (tally.total) results.push({ id: ex.id, name: ex.name, ...tally });
       if (running && n < selected.length - 1) {
         coach("Nice work. Take a sip of water, next one's coming.", "", "happy");
-        say("Nice. Next exercise.");
+        say("Nice work. Grab some water, the next one's coming up.");
         await frames(ctx.currentTime + 4, () => {});
       }
     }
@@ -390,7 +390,7 @@
       $("sumMeta").textContent = `of notes on pitch across ${results.length} exercise${results.length > 1 ? "s" : ""}`;
       $("summary").hidden = false;
       coach("You did it. I'm proud of you.", "ok", "proud");
-      say("That's your session. Great job.");
+      say("That's your session. Really nice work today.");
       $("summary").scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
@@ -408,7 +408,7 @@
     if (!paused) {
       paused = true;
       pausedAt = Date.now();
-      if ("speechSynthesis" in window) speechSynthesis.cancel();
+      hush();
       await ctx.suspend();
       coach("Paused. Tap Resume when you're ready.", "", "sleepy");
     } else {
@@ -427,7 +427,7 @@
     paused = false;
     piano?.stopAll();
     ctx?.resume();
-    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    hush();
     $("go").hidden = false;
     $("controls").hidden = true;
     $("go").textContent = selected.length > 1 ? "Start session" : "Start exercise";
