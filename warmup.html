@@ -4,127 +4,92 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#fff5f7">
+<meta name="theme-color" content="#fbf6f2">
 <title>Vocal Workout</title>
-<style>
-  :root {
-    --bg: #111318; --panel: #1b1e26; --panel2: #2a2e39; --text: #f2f3f5; --muted: #9aa0ab;
-    --low: #f0a43c; --ok: #3ccf7f; --high: #e8615a; --accent: #8b7cf6;
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; min-height: 100%; }
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    display: flex; flex-direction: column; align-items: center;
-    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
-    -webkit-user-select: none; user-select: none;
-  }
-  main { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 14px; }
-  nav { text-align: center; color: var(--muted); font-size: 15px; margin-top: 4px; }
-  nav span { color: var(--text); font-weight: 600; }
-  nav a { color: var(--accent); text-decoration: none; font-weight: 600; }
-  button { font: inherit; color: var(--text); border: 0; cursor: pointer; }
-  .exercises { display: flex; flex-direction: column; gap: 6px; }
-  .ex { display: flex; align-items: center; gap: 12px; text-align: left; background: var(--panel); border-radius: 14px; padding: 12px 14px; }
-  .ex .num { width: 30px; height: 30px; border-radius: 50%; background: var(--panel2); display: grid; place-items: center; font-weight: 700; flex: none; }
-  .ex .txt { flex: 1; }
-  .ex .nm { font-weight: 600; }
-  .ex .ds { color: var(--muted); font-size: 13px; margin-top: 2px; }
-  .ex.active { outline: 2px solid var(--accent); }
-  .ex.active .num { background: var(--accent); color: #fff; }
-  .ex.done .num { background: var(--ok); color: #111; }
-  .controls { background: var(--panel); border-radius: 14px; padding: 6px 10px; display: flex; flex-direction: column; }
-  .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
-  .row + .row { border-top: 1px solid rgba(255,255,255,.06); }
-  .row .label { color: var(--muted); font-size: 14px; flex: 1; }
-  .row .value { font-size: 20px; font-weight: 700; min-width: 76px; text-align: center; font-variant-numeric: tabular-nums; }
-  .step { font-size: 22px; width: 46px; padding: 8px 0; background: var(--panel2); border-radius: 12px; }
-  [aria-disabled="true"] { opacity: .45; pointer-events: none; }
-  .stage { background: var(--panel); border-radius: 14px; padding: 16px 12px; display: flex; flex-direction: column; gap: 10px; }
-  .now { text-align: center; font-size: 15px; color: var(--muted); min-height: 20px; }
-  .sound { text-align: center; font-size: 22px; font-weight: 700; color: var(--accent); min-height: 28px; }
-  .key { text-align: center; font-size: 56px; font-weight: 800; line-height: 1; }
-  .feedback { text-align: center; font-size: 26px; font-weight: 800; min-height: 32px; }
-  .feedback.ok { color: var(--ok); } .feedback.low { color: var(--low); } .feedback.high { color: var(--high); }
-  .notes { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; min-height: 22px; }
-  .n { height: 18px; min-width: 10px; border-radius: 5px; background: var(--panel2); transition: background 100ms; }
-  .n.cur { background: var(--accent); }
-  .n.ok { background: var(--ok); } .n.low { background: var(--low); } .n.high { background: var(--high); }
-  .n.miss { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
-  .legend { display: flex; justify-content: center; gap: 14px; color: var(--muted); font-size: 12px; }
-  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
-  .live { text-align: center; font-size: 14px; color: var(--muted); min-height: 18px; }
-  .history { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
-  .history span { width: 14px; height: 14px; border-radius: 4px; background: var(--panel2); }
-  .history span.ok { background: var(--ok); } .history span.low { background: var(--low); } .history span.high { background: var(--high); }
-  .go { font-size: 22px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 16px; padding: 20px; width: 100%; }
-  .go.stop { background: #3a3f4b; }
-  .toggle { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; justify-content: center; }
-  .toggle input { width: 20px; height: 20px; accent-color: var(--accent); }
-  .tips { background: var(--panel); border-radius: 14px; padding: 14px 16px; color: var(--muted); font-size: 14px; line-height: 1.5; }
-  .tips b { color: var(--text); }
-  .error { color: var(--high); text-align: center; font-size: 15px; }
-</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="theme.css">
 <link rel="icon" href="sloth.svg">
 <link rel="apple-touch-icon" href="sloth.svg">
+<style>
+  .sound { font-size: 30px; font-weight: 800; color: var(--accent-deep); min-height: 38px; text-align: center; }
+  .meta { display: flex; gap: 8px; align-items: baseline; justify-content: center; color: var(--muted); font-size: 14px; margin-top: -12px; }
+  .meta .key { font-weight: 800; color: var(--text); font-size: 16px; }
+  .notes { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; min-height: 16px; max-width: 360px; }
+  .n { height: 14px; min-width: 14px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--soft); transition: background 120ms, transform 120ms; }
+  .n.cur { background: var(--accent); box-shadow: none; transform: scale(1.25); }
+  .n.ok { background: var(--ok); box-shadow: none; } .n.low { background: var(--low); box-shadow: none; } .n.high { background: var(--high); box-shadow: none; }
+  .n.miss { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
+  .live { color: var(--muted); font-size: 13px; min-height: 18px; margin-top: -10px; }
+  .sound:empty, .key:empty, .notes:empty, .history:empty { display: none; }
+  .history { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 8px; }
+  .history span { width: 8px; height: 8px; border-radius: 50%; background: var(--soft); }
+  .history span.ok { background: var(--ok); } .history span.low { background: var(--low); } .history span.high { background: var(--high); }
+
+  /* The four exercises as stops along a vine */
+  .path { position: relative; width: 100%; display: flex; justify-content: space-between; padding: 0 6px; }
+  .path::before { content: ""; position: absolute; left: 40px; right: 40px; top: 25px; border-top: 3px dotted #e2c7cf; }
+  .ex { position: relative; width: 25%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .ex .dot { width: 52px; height: 52px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-weight: 800; color: var(--accent-deep); font-size: 18px; box-shadow: 0 4px 14px rgba(194, 125, 146, .14); transition: transform .2s; }
+  .ex .nm { font-size: 12.5px; font-weight: 700; line-height: 1.2; text-align: center; }
+  .ex .sd { font-size: 11.5px; color: var(--muted); }
+  .ex.active .dot { background: var(--accent); color: #fff; transform: scale(1.12); }
+  .ex.done .dot { background: var(--ok); color: #fff; }
+  .path[aria-disabled="true"] .ex:not(.active) { opacity: .5; }
+
+  details { width: 100%; }
+  summary { list-style: none; text-align: center; color: var(--muted); font-weight: 700; font-size: 14px; cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
+  details[aria-disabled="true"] { opacity: .45; pointer-events: none; }
+  .settings { margin-top: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .set { display: flex; align-items: center; gap: 10px; }
+  .set .label { flex: 1; font-size: 14px; color: var(--muted); font-weight: 600; }
+  .set .value { min-width: 64px; text-align: center; font-weight: 800; font-size: 17px; }
+  .toggle { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; font-weight: 600; }
+  .toggle input { width: 20px; height: 20px; accent-color: var(--accent-deep); }
+</style>
 </head>
 <body>
 <main>
-  <div class="brand"><img src="sloth.svg" alt=""><div class="title">Mariah</div><div class="tag">your slow-and-steady voice coach</div></div>
-  <nav><a href="./">← Pitch test</a> · <span>Workout</span></nav>
-
-  <div class="exercises" id="exercises"></div>
-
-  <div class="controls" id="controls">
-    <div class="row">
-      <span class="label">Lowest starting note</span>
-      <button class="step" id="keyDown" aria-label="Lower">−</button>
-      <span class="value" id="keyVal">G3</span>
-      <button class="step" id="keyUp" aria-label="Higher">+</button>
-    </div>
-    <div class="row">
-      <span class="label">Half steps to climb</span>
-      <button class="step" id="climbDown" aria-label="Fewer">−</button>
-      <span class="value" id="climbVal">9</span>
-      <button class="step" id="climbUp" aria-label="More">+</button>
-    </div>
-    <div class="row">
-      <span class="label">Speed</span>
-      <button class="step" id="speedDown" aria-label="Slower">−</button>
-      <span class="value" id="speedVal">100%</span>
-      <button class="step" id="speedUp" aria-label="Faster">+</button>
-    </div>
+  <div class="topbar">
+    <div class="wordmark"><span class="mini" data-sloth="happy" data-bow="no"></span>Mariah</div>
+    <nav class="switch"><a href="./">Pitch</a><span>Workout</span></nav>
   </div>
 
-  <div class="stage">
-    <div class="now" id="now">Pick an exercise, or do the whole workout</div>
-    <div class="sound" id="sound"></div>
-    <div class="key" id="key">–</div>
-    <div class="notes" id="notes"></div>
-    <div class="feedback" id="feedback"></div>
-    <div class="live" id="live"></div>
-    <div class="history" id="history"></div>
+  <div class="hero">
+    <div class="bubble" id="feedback">Hi! Ready to warm up together?</div>
+    <div class="cloud bob"><div id="mascot" data-sloth="happy"></div></div>
   </div>
-  <div class="legend"><span><i style="background:var(--ok)"></i>on pitch</span><span><i style="background:var(--low)"></i>flat</span><span><i style="background:var(--high)"></i>sharp</span><span><i style="box-shadow:inset 0 0 0 1.5px var(--muted)"></i>not heard</span></div>
+
+  <div class="sound" id="sound"></div>
+  <div class="meta"><span class="key" id="key"></span><span id="now">Pick an exercise, or do them all</span></div>
+  <div class="notes" id="notes"></div>
+  <div class="live" id="live"></div>
+  <div class="history" id="history"></div>
+
+  <div class="path" id="exercises"></div>
 
   <div class="error" id="error"></div>
   <button class="go" id="go">Start full workout</button>
-  <label class="toggle"><input type="checkbox" id="speak" checked> Say the feedback out loud</label>
 
-  <div class="tips">
-    <b>Wear wired earbuds.</b> The piano plays along with you, so if it comes out of the speaker the mic hears the piano instead of you.<br><br>
-    Like your video: the piano gives you the note, you sing the pattern with it, and it moves up a half step every loop, then back down. After each loop you hear one word: <b>nice</b>, <b>flat</b> or <b>sharp</b>. Nothing is recorded or saved.
-  </div>
+  <details id="controls">
+    <summary>Settings ⌄</summary>
+    <div class="settings">
+      <div class="set"><span class="label">Lowest note</span><button class="round" id="keyDown" aria-label="Lower">−</button><span class="value" id="keyVal">G3</span><button class="round" id="keyUp" aria-label="Higher">+</button></div>
+      <div class="set"><span class="label">Half steps to climb</span><button class="round" id="climbDown" aria-label="Fewer">−</button><span class="value" id="climbVal">9</span><button class="round" id="climbUp" aria-label="More">+</button></div>
+      <div class="set"><span class="label">Speed</span><button class="round" id="speedDown" aria-label="Slower">−</button><span class="value" id="speedVal">100%</span><button class="round" id="speedUp" aria-label="Faster">+</button></div>
+      <label class="toggle"><input type="checkbox" id="speak" checked> Say the feedback out loud</label>
+    </div>
+  </details>
+
+  <p class="hint">🎧 <b>Wear wired earbuds</b> so the mic hears you, not the piano. The piano gives you the note and sings along, moving up a half step each loop. Nothing is recorded or saved.</p>
 </main>
 
 <script type="module">
   import { PitchDetector } from "https://cdn.jsdelivr.net/npm/pitchy@4.1.0/+esm";
   import { createPiano } from "./piano.js";
+  import { drawSloths, setMood } from "./sloth.js";
 
   const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
   const IN_TUNE_CENTS = 25;
@@ -138,7 +103,7 @@
   const EXERCISES = [
     { name: "Fifths", sound: "Hum (mm)", desc: "1 · 5-5 · 1 · 5 · 1, slow and steady", bpm: 60, offset: 0,
       cue: [[0, 2]], sing: [[0, 1], [7, 0.5], [7, 0.5], [0, 1], [7, 1], [0, 2]] },
-    { name: "Fifths, part 2", sound: "Nay", desc: "1 · 5 · 1 · 5 · 1, one note per beat", bpm: 60, offset: 2,
+    { name: "More fifths", sound: "Nay", desc: "1 · 5 · 1 · 5 · 1, one note per beat", bpm: 60, offset: 2,
       cue: [], sing: [[0, 1], [7, 1], [0, 1], [7, 1], [0, 2], [null, 2]] },
     { name: "5-note scale", sound: "Mah", desc: "Up the scale, hold the top, back down", bpm: 60, offset: 0,
       cue: [[0, 2]], sing: [[0, 0.5], [2, 0.5], [4, 0.5], [5, 0.5], [7, 2.5], [5, 0.5], [4, 0.5], [2, 0.5], [0, 1]] },
@@ -169,7 +134,8 @@
       const b = document.createElement("button");
       b.className = "ex";
       b.id = `ex${i}`;
-      b.innerHTML = `<span class="num">${i + 1}</span><span class="txt"><div class="nm">${ex.name}</div><div class="ds">“${ex.sound}” · ${ex.desc}</div></span>`;
+      b.title = ex.desc;
+      b.innerHTML = `<span class="dot">${i + 1}</span><span class="nm">${ex.name}</span><span class="sd">“${ex.sound.replace(/ \(.*\)/, "")}”</span>`;
       b.onclick = () => { if (!running) start([i]); };
       $("exercises").append(b);
     });
@@ -278,7 +244,9 @@
     document.querySelectorAll(".ex").forEach((b) => b.classList.remove("active"));
     $(`ex${index}`).classList.add("active");
     $("history").innerHTML = "";
-    $("feedback").textContent = "";
+    $("feedback").className = "bubble";
+    $("feedback").textContent = `${ex.name} on “${ex.sound.replace(/ \(.*\)/, "")}”. ${ex.desc}.`;
+    setMood($("mascot"), "sing");
     $("now").textContent = `Exercise ${index + 1}: ${ex.name} · loading piano…`;
     say(`Exercise ${index + 1}. ${ex.name}, on ${ex.sound.replace(/ \(.*\)/, "")}.`);
     await piano.preload(keys.flatMap((k) => layout(ex, k).events.map((e) => e.midi)));
@@ -290,6 +258,7 @@
       const scoredEvents = events.filter((e) => e.scored);
       $("now").textContent = `Exercise ${index + 1}: ${ex.name} · ${loop + 1} of ${keys.length}`;
       $("key").textContent = label(key);
+      if (loop > 0) setTimeout(() => running && setMood($("mascot"), "sing"), 900);
       $("sound").textContent = `“${ex.sound}”`;
       drawNotes(events);
 
@@ -315,7 +284,8 @@
       drawNotes(events, results);
       const v = verdict(results);
       $("feedback").textContent = v.word;
-      $("feedback").className = "feedback " + v.kind;
+      $("feedback").className = "bubble " + v.kind;
+      setMood($("mascot"), v.kind === "ok" ? "proud" : v.kind === "miss" ? "happy" : "oops");
       say(v.word);
       const chip = document.createElement("span");
       chip.className = v.kind;
@@ -338,15 +308,20 @@
     $("exercises").setAttribute("aria-disabled", "true");
     document.querySelectorAll(".ex").forEach((b) => b.classList.remove("done"));
     try { wakeLock ??= await navigator.wakeLock?.request("screen"); } catch {}
-    document.querySelector(".stage").scrollIntoView({ behavior: "smooth", block: "center" });
+    document.querySelector(".hero").scrollIntoView({ behavior: "smooth", block: "start" });
+    $("feedback").className = "bubble";
+    $("feedback").textContent = "Let's go! Sing along with me.";
+    setMood($("mascot"), "sing");
 
     for (let n = 0; n < list.length && running; n++) {
       await runExercise(list[n]);
       if (running && n < list.length - 1) {
         $("now").textContent = "Quick breather";
-        $("key").textContent = "💧";
+        $("key").textContent = "";
+        $("feedback").className = "bubble";
+        $("feedback").textContent = "Sip of water? 💧 Next one coming up.";
+        setMood($("mascot"), "happy");
         $("sound").textContent = "";
-        $("feedback").textContent = "";
         $("notes").innerHTML = "";
         say("Nice. Next exercise.");
         await frames(ctx.currentTime + 4, () => {});
@@ -365,6 +340,10 @@
     document.querySelectorAll(".ex").forEach((b) => b.classList.remove("active"));
     $("live").textContent = "";
     $("now").textContent = message;
+    $("sound").textContent = "";
+    $("feedback").className = "bubble";
+    $("feedback").textContent = finished ? "You did it! So proud of you 💕" : "Taking a break? I'll be right here.";
+    setMood($("mascot"), finished ? "proud" : "sleepy");
     if (finished) say(message.startsWith("That's") ? "That's your workout. Great job." : "Nice work.");
   }
 
@@ -379,6 +358,7 @@
   $("speedDown").onclick = () => setSpeed(speed - 10);
   $("speedUp").onclick = () => setSpeed(speed + 10);
   $("go").onclick = () => (running ? stop("Stopped") : start(EXERCISES.map((_, i) => i)));
+  drawSloths();
   render();
 </script>
 </body>

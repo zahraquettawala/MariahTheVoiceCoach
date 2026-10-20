@@ -1,80 +1,75 @@
-/* Soft pink theme shared by every page. Loaded after each page's own styles. */
+/* Shared look for every page: calm cream and dusty rose, soft and round. */
 :root {
-  --bg: #fff5f7;
-  --bg2: #fde4ec;
-  --panel: #ffffff;
-  --panel2: #fbe6ee;
-  --text: #4a2b3a;
-  --muted: #9b7a88;
-  --accent: #e8789b;
-  --accent-deep: #d45c83;
-  --ok: #5fbf93;
-  --low: #f2a35e;
-  --high: #e5677a;
-  --line: rgba(74, 43, 58, .08);
-  --shadow: 0 6px 24px rgba(212, 92, 131, .10);
+  --bg: #fbf6f2;
+  --bg2: #f6e8ea;
+  --surface: rgba(255, 255, 255, .72);
+  --soft: #f3e3e6;
+  --text: #5a4650;
+  --muted: #a08d95;
+  --accent: #d99aac;
+  --accent-deep: #c27d92;
+  --sage: #a9c5b4;
+  --ok: #8cc4a6;
+  --low: #e9bf8f;
+  --high: #e5a0a6;
+  --line: rgba(90, 70, 80, .08);
 }
 
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
 body {
-  background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%) fixed;
+  background:
+    radial-gradient(120% 60% at 50% 0%, #fdf0f1 0%, transparent 70%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%) fixed;
   color: var(--text);
   font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex; flex-direction: column; align-items: center;
+  padding: max(14px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
+main { width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+button { font: inherit; color: var(--text); border: 0; background: none; cursor: pointer; }
 
-button { color: var(--text); font-family: inherit; }
+/* Top bar: wordmark and page switch */
+.topbar { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+.wordmark { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 19px; letter-spacing: .2px; }
+.wordmark .mini { width: 30px; height: 30px; }
+.switch { display: flex; background: var(--surface); border-radius: 999px; padding: 3px; font-size: 13px; font-weight: 700; }
+.switch a, .switch span { padding: 6px 12px; border-radius: 999px; text-decoration: none; color: var(--muted); }
+.switch span { background: #fff; color: var(--accent-deep); box-shadow: 0 2px 8px rgba(194, 125, 146, .15); }
 
-/* Cards */
-.controls, .stage, .tips, .ex, .target, .meter, canvas {
-  background: var(--panel) !important;
-  box-shadow: var(--shadow);
-  border-radius: 22px !important;
+/* The sloth on her soft cloud, with a speech bubble */
+.hero { position: relative; display: flex; flex-direction: column; align-items: center; margin-top: 4px; }
+.bubble {
+  position: relative; background: #fff; border-radius: 22px; padding: 12px 18px; max-width: 300px;
+  text-align: center; font-weight: 700; font-size: 17px; line-height: 1.35;
+  box-shadow: 0 6px 20px rgba(194, 125, 146, .12); margin-bottom: 14px; min-height: 46px;
 }
-.row + .row { border-top-color: var(--line) !important; }
-
-/* Small round buttons */
-.step, .play, .after button, .patterns button {
-  background: var(--panel2) !important;
-  color: var(--accent-deep) !important;
-  border-radius: 999px !important;
-  font-weight: 800;
+.bubble::after {
+  content: ""; position: absolute; left: 50%; bottom: -9px; width: 18px; height: 18px; margin-left: -9px;
+  background: #fff; transform: rotate(45deg); border-radius: 4px;
 }
-
-/* Big main button */
-.go, #start {
-  background: linear-gradient(135deg, #f29bb6, var(--accent-deep)) !important;
-  color: #fff !important;
-  border-radius: 999px !important;
-  box-shadow: 0 10px 24px rgba(212, 92, 131, .30);
-  letter-spacing: .2px;
+.bubble.ok { color: #5f9c7c; } .bubble.low { color: #c08a4f; } .bubble.high { color: #c26b74; }
+.cloud {
+  width: 170px; height: 170px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, #fff 0%, #fbeef0 55%, rgba(251, 238, 240, 0) 72%);
+  display: grid; place-items: center;
 }
-.go.stop, #start.stop, button.stop {
-  background: #ffffff !important;
-  color: var(--accent-deep) !important;
-  box-shadow: inset 0 0 0 2px var(--accent), var(--shadow);
+.cloud [data-sloth] { width: 132px; height: 132px; transition: transform .4s ease; }
+.cloud.bob [data-sloth] { animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-5px) rotate(-2deg); } }
+
+/* Pill buttons */
+.pill { background: var(--surface); border-radius: 999px; padding: 10px 16px; font-weight: 700; color: var(--accent-deep); }
+.round { width: 42px; height: 42px; border-radius: 50%; background: var(--surface); color: var(--accent-deep); font-size: 22px; font-weight: 800; display: grid; place-items: center; }
+.go {
+  width: 100%; padding: 19px; border-radius: 999px; font-size: 20px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #e6b3c1, var(--accent-deep));
+  box-shadow: 0 10px 26px rgba(194, 125, 146, .28);
 }
+.go.stop { background: #fff; color: var(--accent-deep); box-shadow: inset 0 0 0 2px var(--accent); }
 
-nav a { color: var(--accent-deep) !important; }
-nav span { color: var(--text) !important; }
-
-/* Mascot header */
-.brand { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 4px; }
-.brand img { width: 84px; height: 84px; filter: drop-shadow(0 6px 12px rgba(212, 92, 131, .18)); }
-.brand .title { font-size: 22px; font-weight: 800; letter-spacing: .3px; }
-.brand .tag { font-size: 13px; color: var(--muted); }
-
-/* Workout page */
-.ex .num { background: var(--panel2) !important; color: var(--accent-deep); }
-.ex.active { outline: 2px solid var(--accent) !important; }
-.ex.active .num { background: var(--accent) !important; color: #fff !important; }
-.ex.done .num { background: var(--ok) !important; color: #fff !important; }
-.n { background: var(--panel2) !important; }
-.n.cur { background: var(--accent) !important; }
-.n.ok { background: var(--ok) !important; } .n.low { background: var(--low) !important; } .n.high { background: var(--high) !important; }
-.n.miss { background: transparent !important; }
-.history span { background: var(--panel2); }
-.sound { color: var(--accent-deep) !important; }
-.toggle input { accent-color: var(--accent); }
-
-/* Pitch test page */
-.meter .zone { background: rgba(95, 191, 147, .18) !important; }
-.tips b { color: var(--text) !important; }
+.hint { color: var(--muted); font-size: 13.5px; line-height: 1.5; text-align: center; max-width: 330px; }
+.hint b { color: var(--text); }
+.error { color: #c26b74; text-align: center; font-size: 14.5px; }

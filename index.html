@@ -4,79 +4,47 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#fff5f7">
+<meta name="theme-color" content="#fbf6f2">
 <title>Pitch Test</title>
-<style>
-  :root {
-    --bg: #111318; --panel: #1b1e26; --text: #f2f3f5; --muted: #9aa0ab;
-    --low: #f0a43c; --ok: #3ccf7f; --high: #e8615a; --accent: #8b7cf6;
-  }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    display: flex; flex-direction: column; align-items: center;
-    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
-    -webkit-user-select: none; user-select: none;
-  }
-  main { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 16px; }
-  nav { text-align: center; color: var(--muted); font-size: 15px; margin-top: 4px; }
-  nav span { color: var(--text); font-weight: 600; }
-  nav a { color: var(--accent); text-decoration: none; font-weight: 600; }
-  h1 { font-size: 18px; font-weight: 600; margin: 4px 0 0; color: var(--muted); text-align: center; }
-  .note { text-align: center; margin-top: 8px; }
-  .note .name { font-size: 104px; font-weight: 700; line-height: 1; letter-spacing: -2px; }
-  .note .name small { font-size: 40px; font-weight: 500; color: var(--muted); margin-left: 2px; }
-  .note .hz { color: var(--muted); font-size: 15px; margin-top: 6px; font-variant-numeric: tabular-nums; }
-  .verdict { text-align: center; font-size: 26px; font-weight: 700; min-height: 34px; }
-  .meter { position: relative; height: 56px; background: var(--panel); border-radius: 14px; overflow: hidden; }
-  .meter .zone { position: absolute; top: 0; bottom: 0; left: 25%; width: 50%; background: rgba(60, 207, 127, .18); }
-  .meter .center { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; background: var(--ok); opacity: .7; }
-  .meter .needle { position: absolute; top: 8px; bottom: 8px; left: 50%; width: 10px; margin-left: -5px; border-radius: 5px; background: var(--muted); transition: left 60ms linear, background 120ms; opacity: 0; }
-  .labels { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; margin-top: -8px; padding: 0 4px; }
-  canvas { width: 100%; height: 160px; background: var(--panel); border-radius: 14px; display: block; }
-  .caption { color: var(--muted); font-size: 13px; text-align: center; margin-top: -8px; }
-  button {
-    font: inherit; font-size: 22px; font-weight: 700; color: #fff; background: var(--accent);
-    border: 0; border-radius: 16px; padding: 22px; width: 100%; cursor: pointer;
-  }
-  button.stop { background: #3a3f4b; }
-  .tips { background: var(--panel); border-radius: 14px; padding: 14px 16px; color: var(--muted); font-size: 14px; line-height: 1.5; }
-  .tips b { color: var(--text); }
-  .target { display: flex; align-items: center; gap: 8px; background: var(--panel); border-radius: 14px; padding: 10px; }
-  .target .label { color: var(--muted); font-size: 14px; padding-left: 6px; }
-  .target .tnote { font-size: 24px; font-weight: 700; min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
-  .target .step { font-size: 24px; padding: 10px 0; width: 48px; background: #2a2e39; border-radius: 12px; }
-  .target .play { font-size: 17px; padding: 14px 10px; flex: 1; background: #2a2e39; border-radius: 12px; }
-  .error { color: var(--high); text-align: center; font-size: 15px; min-height: 0; }
-</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="theme.css">
 <link rel="icon" href="sloth.svg">
 <link rel="apple-touch-icon" href="sloth.svg">
+<style>
+  .note { text-align: center; margin-top: -6px; }
+  .note .name { font-size: 76px; font-weight: 800; line-height: 1; letter-spacing: -1px; min-height: 76px; }
+  .note .name small { font-size: 30px; font-weight: 700; color: var(--muted); margin-left: 2px; }
+  .note .hz { color: var(--muted); font-size: 14px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .meter { position: relative; width: 100%; height: 34px; border-radius: 999px; background: var(--surface); overflow: hidden; }
+  .meter .zone { position: absolute; top: 0; bottom: 0; left: 25%; width: 50%; background: rgba(140, 196, 166, .22); }
+  .meter .center { position: absolute; top: 6px; bottom: 6px; left: 50%; width: 2px; margin-left: -1px; border-radius: 2px; background: var(--ok); opacity: .7; }
+  .meter .needle { position: absolute; top: 5px; bottom: 5px; left: 50%; width: 24px; margin-left: -12px; border-radius: 999px; background: var(--muted); transition: left 60ms linear, background 120ms; opacity: 0; box-shadow: 0 2px 8px rgba(90, 70, 80, .15); }
+  .labels { width: 100%; display: flex; justify-content: space-between; color: var(--muted); font-size: 12.5px; font-weight: 600; margin-top: -10px; padding: 0 8px; }
+  canvas { width: 100%; height: 130px; display: block; border-radius: 24px; background: var(--surface); }
+  .caption { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: -10px; }
+  .target { display: flex; align-items: center; gap: 10px; }
+  .target .label { color: var(--muted); font-size: 14px; font-weight: 700; }
+  .target .tnote { font-size: 22px; font-weight: 800; min-width: 52px; text-align: center; font-variant-numeric: tabular-nums; }
+</style>
 </head>
 <body>
 <main>
-  <div class="brand"><img src="sloth.svg" alt=""><div class="title">Mariah</div><div class="tag">your slow-and-steady voice coach</div></div>
-  <nav><span>Pitch test</span> · <a href="warmup.html">Workout →</a></nav>
+  <div class="topbar">
+    <div class="wordmark"><span class="mini" data-sloth="happy" data-bow="no"></span>Mariah</div>
+    <nav class="switch"><span>Pitch</span><a href="warmup.html">Workout</a></nav>
+  </div>
 
-  <div class="target">
-    <span class="label">Match</span>
-    <button class="step" id="down" aria-label="Lower note">−</button>
-    <span class="tnote" id="tnote">C4</span>
-    <button class="step" id="up" aria-label="Higher note">+</button>
-    <button class="play" id="play">▶ Play note</button>
+  <div class="hero">
+    <div class="bubble" id="verdict">Pick a note, play it, then sing it back to me</div>
+    <div class="cloud bob"><div id="mascot" data-sloth="happy"></div></div>
   </div>
 
   <div class="note">
-    <div class="name" id="name">–</div>
+    <div class="name" id="name"></div>
     <div class="hz" id="hz">Tap Start, then sing</div>
   </div>
-
-  <div class="verdict" id="verdict"></div>
 
   <div class="meter" aria-hidden="true">
     <div class="zone"></div>
@@ -85,20 +53,27 @@
   </div>
   <div class="labels"><span>too low</span><span>on it</span><span>too high</span></div>
 
+  <div class="target">
+    <span class="label">Match</span>
+    <button class="round" id="down" aria-label="Lower note">−</button>
+    <span class="tnote" id="tnote">C4</span>
+    <button class="round" id="up" aria-label="Higher note">+</button>
+    <button class="pill" id="play">▶ Play note</button>
+  </div>
+
   <canvas id="trace" aria-label="Your pitch over the last few seconds"></canvas>
-  <div class="caption">Your pitch over the last 6 seconds. A steady note should be a flat line.</div>
+  <div class="caption">Your last 6 seconds. A steady note is a flat line.</div>
 
   <div class="error" id="error"></div>
-  <button id="start">Start</button>
+  <button class="go" id="start">Start</button>
 
-  <div class="tips">
-    <b>Before you start:</b> hold your phone about an arm's length away or set it on a table. When Safari asks to use the microphone, tap <b>Allow</b>. Pick a note, tap <b>Play note</b>, then sing it back. No sound? Check the silent switch on the side of your phone. Nothing is recorded or saved; the sound stays on your phone.
-  </div>
+  <p class="hint">Hold your phone about an arm's length away and tap <b>Allow</b> when Safari asks for the mic. No sound? Check the silent switch. Nothing is recorded or saved.</p>
 </main>
 
 <script type="module">
   import { PitchDetector } from "https://cdn.jsdelivr.net/npm/pitchy@4.1.0/+esm";
   import { createPiano } from "./piano.js";
+  import { drawSloths, setMood } from "./sloth.js";
 
   const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
   const IN_TUNE_CENTS = 25;    // within this many cents counts as "on it"
@@ -192,12 +167,20 @@
     button.textContent = "Start";
     button.classList.remove("stop");
     showSilence("Stopped. Tap Start to go again");
+    say("Nice singing! Tap Start anytime");
+    mascot("sleepy");
+  }
+
+  let mood = "happy";
+  function mascot(m) { if (m !== mood) { mood = m; setMood($("mascot"), m); } }
+  function say(text, kind = "") {
+    if (verdictEl.textContent !== text) verdictEl.textContent = text;
+    verdictEl.className = "bubble " + kind;
   }
 
   function showSilence(msg) {
-    nameEl.textContent = "–";
+    nameEl.textContent = "";
     hzEl.textContent = msg;
-    verdictEl.textContent = "";
     needle.style.opacity = 0;
   }
 
@@ -210,6 +193,8 @@
       smoothedMidi = null;
       recent = [];
       showSilence("Listen… then sing it back");
+      say("Listen to the note… 🎹");
+      mascot("happy");
       trace.push({ t: now, midi: null });
     } else if (clarity >= MIN_CLARITY && hz >= MIN_HZ && hz <= MAX_HZ) {
       const midi = midiFromHz(hz);
@@ -230,12 +215,12 @@
         ? `${steps} half step${steps > 1 ? "s" : ""} ${cents > 0 ? "above" : "below"} the target`
         : `${cents > 0 ? "+" : ""}${cents} cents from the target`;
 
-      let color, word;
-      if (cents < -IN_TUNE_CENTS) { color = "var(--low)"; word = "Too low"; }
-      else if (cents > IN_TUNE_CENTS) { color = "var(--high)"; word = "Too high"; }
-      else { color = "var(--ok)"; word = "On it"; }
-      verdictEl.textContent = word;
-      verdictEl.style.color = color;
+      let color, word, kind;
+      if (cents < -IN_TUNE_CENTS) { color = "var(--low)"; word = "A little low, lift it up"; kind = "low"; }
+      else if (cents > IN_TUNE_CENTS) { color = "var(--high)"; word = "A little high, ease down"; kind = "high"; }
+      else { color = "var(--ok)"; word = "You're on it! 💕"; kind = "ok"; }
+      say(word, kind);
+      mascot(kind === "ok" ? "proud" : "oops");
       needle.style.background = color;
       needle.style.opacity = 1;
       needle.style.left = `${50 + Math.max(-50, Math.min(50, cents))}%`;
@@ -244,6 +229,7 @@
       smoothedMidi = null;
       recent = [];
       showSilence("Listening… sing a note");
+      if (button.classList.contains("stop")) { say("I'm listening… sing for me"); mascot("sing"); }
       trace.push({ t: now, midi: null });
     }
 
@@ -270,16 +256,16 @@
     // Note grid lines
     ctx.font = "11px Nunito, -apple-system, sans-serif";
     for (let m = mid - span; m <= mid + span; m++) {
-      ctx.strokeStyle = m === mid ? "rgba(95,191,147,.6)" : "rgba(74,43,58,.08)";
+      ctx.strokeStyle = m === mid ? "rgba(140,196,166,.8)" : "rgba(90,70,80,.07)";
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(0, y(m)); ctx.lineTo(w, y(m)); ctx.stroke();
       const { letter, octave } = noteLabel(m);
-      ctx.fillStyle = "rgba(74,43,58,.4)";
+      ctx.fillStyle = "rgba(90,70,80,.35)";
       ctx.fillText(`${letter}${octave}`, 6, y(m) - 3);
     }
 
     // Pitch line, broken wherever there was silence
-    ctx.strokeStyle = "#e8789b";
+    ctx.strokeStyle = "#c27d92";
     ctx.lineWidth = 3;
     ctx.lineJoin = "round";
     ctx.beginPath();
@@ -296,6 +282,7 @@
   $("up").addEventListener("click", () => setTarget(targetMidi + 1));
   $("play").addEventListener("click", playNote);
   showTarget();
+  drawSloths();
 
   button.addEventListener("click", () => (button.classList.contains("stop") ? stop() : start()));
 </script>
