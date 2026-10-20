@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#111318">
-<title>Sing-Along Warmup</title>
+<title>Vocal Workout</title>
 <style>
   :root {
     --bg: #111318; --panel: #1b1e26; --panel2: #2a2e39; --text: #f2f3f5; --muted: #9aa0ab;
@@ -25,31 +25,38 @@
   nav span { color: var(--text); font-weight: 600; }
   nav a { color: var(--accent); text-decoration: none; font-weight: 600; }
   button { font: inherit; color: var(--text); border: 0; cursor: pointer; }
+  .exercises { display: flex; flex-direction: column; gap: 6px; }
+  .ex { display: flex; align-items: center; gap: 12px; text-align: left; background: var(--panel); border-radius: 14px; padding: 12px 14px; }
+  .ex .num { width: 30px; height: 30px; border-radius: 50%; background: var(--panel2); display: grid; place-items: center; font-weight: 700; flex: none; }
+  .ex .txt { flex: 1; }
+  .ex .nm { font-weight: 600; }
+  .ex .ds { color: var(--muted); font-size: 13px; margin-top: 2px; }
+  .ex.active { outline: 2px solid var(--accent); }
+  .ex.active .num { background: var(--accent); color: #fff; }
+  .ex.done .num { background: var(--ok); color: #111; }
   .controls { background: var(--panel); border-radius: 14px; padding: 6px 10px; display: flex; flex-direction: column; }
   .row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
   .row + .row { border-top: 1px solid rgba(255,255,255,.06); }
   .row .label { color: var(--muted); font-size: 14px; flex: 1; }
   .row .value { font-size: 20px; font-weight: 700; min-width: 76px; text-align: center; font-variant-numeric: tabular-nums; }
   .step { font-size: 22px; width: 46px; padding: 8px 0; background: var(--panel2); border-radius: 12px; }
-  .controls[aria-disabled="true"] { opacity: .45; pointer-events: none; }
-  .vowel { text-align: center; font-size: 56px; font-weight: 800; line-height: 1.1; margin-top: 6px; }
-  .phase { text-align: center; font-size: 17px; color: var(--muted); min-height: 22px; }
-  .feedback { text-align: center; font-size: 22px; font-weight: 700; min-height: 30px; }
-  .dots { display: flex; justify-content: center; gap: 4px; }
-  .dot { width: 36px; text-align: center; }
-  .dot .ball { width: 30px; height: 30px; margin: 0 auto; border-radius: 50%; background: var(--panel2); transition: transform 80ms, background 120ms; }
-  .dot .nm { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .dot.now .ball { transform: scale(1.25); background: var(--accent); }
-  .dot.ok .ball { background: var(--ok); }
-  .dot.low .ball { background: var(--low); }
-  .dot.high .ball { background: var(--high); }
-  .dot.miss .ball { background: transparent; border: 2px dashed var(--muted); }
+  [aria-disabled="true"] { opacity: .45; pointer-events: none; }
+  .stage { background: var(--panel); border-radius: 14px; padding: 16px 12px; display: flex; flex-direction: column; gap: 10px; }
+  .now { text-align: center; font-size: 15px; color: var(--muted); min-height: 20px; }
+  .key { text-align: center; font-size: 56px; font-weight: 800; line-height: 1; }
+  .feedback { text-align: center; font-size: 26px; font-weight: 800; min-height: 32px; }
+  .feedback.ok { color: var(--ok); } .feedback.low { color: var(--low); } .feedback.high { color: var(--high); }
+  .notes { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; min-height: 22px; }
+  .n { height: 18px; min-width: 10px; border-radius: 5px; background: var(--panel2); transition: background 100ms; }
+  .n.cur { background: var(--accent); }
+  .n.ok { background: var(--ok); } .n.low { background: var(--low); } .n.high { background: var(--high); }
+  .n.miss { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
   .legend { display: flex; justify-content: center; gap: 14px; color: var(--muted); font-size: 12px; }
-  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
-  .live { text-align: center; font-size: 15px; color: var(--muted); min-height: 20px; }
-  .history { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; min-height: 26px; }
-  .history span { font-size: 13px; padding: 4px 9px; border-radius: 999px; background: var(--panel); color: var(--muted); font-variant-numeric: tabular-nums; }
-  .history span.good { color: var(--ok); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+  .live { text-align: center; font-size: 14px; color: var(--muted); min-height: 18px; }
+  .history { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+  .history span { width: 14px; height: 14px; border-radius: 4px; background: var(--panel2); }
+  .history span.ok { background: var(--ok); } .history span.low { background: var(--low); } .history span.high { background: var(--high); }
   .go { font-size: 22px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 16px; padding: 20px; width: 100%; }
   .go.stop { background: #3a3f4b; }
   .toggle { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; justify-content: center; }
@@ -61,44 +68,48 @@
 </head>
 <body>
 <main>
-  <nav><a href="./">← Pitch test</a> · <span>Warmup</span></nav>
+  <nav><a href="./">← Pitch test</a> · <span>Workout</span></nav>
+
+  <div class="exercises" id="exercises"></div>
 
   <div class="controls" id="controls">
     <div class="row">
-      <span class="label">Starting note</span>
+      <span class="label">Lowest starting note</span>
       <button class="step" id="keyDown" aria-label="Lower">−</button>
-      <span class="value" id="keyVal">C4</span>
+      <span class="value" id="keyVal">G3</span>
       <button class="step" id="keyUp" aria-label="Higher">+</button>
     </div>
     <div class="row">
       <span class="label">Half steps to climb</span>
       <button class="step" id="climbDown" aria-label="Fewer">−</button>
-      <span class="value" id="climbVal">5</span>
+      <span class="value" id="climbVal">9</span>
       <button class="step" id="climbUp" aria-label="More">+</button>
     </div>
     <div class="row">
-      <span class="label">Speed (bpm)</span>
-      <button class="step" id="bpmDown" aria-label="Slower">−</button>
-      <span class="value" id="bpmVal">90</span>
-      <button class="step" id="bpmUp" aria-label="Faster">+</button>
+      <span class="label">Speed</span>
+      <button class="step" id="speedDown" aria-label="Slower">−</button>
+      <span class="value" id="speedVal">100%</span>
+      <button class="step" id="speedUp" aria-label="Faster">+</button>
     </div>
   </div>
 
-  <div class="vowel" id="vowel">Hum</div>
-  <div class="phase" id="phase">5-note scale, up and down, with the piano</div>
-  <div class="dots" id="dots"></div>
-  <div class="legend"><span><i style="background:var(--ok)"></i>on pitch</span><span><i style="background:var(--low)"></i>flat</span><span><i style="background:var(--high)"></i>sharp</span><span><i style="border:1.5px dashed var(--muted)"></i>not heard</span></div>
-  <div class="feedback" id="feedback"></div>
-  <div class="live" id="live"></div>
-  <div class="history" id="history"></div>
+  <div class="stage">
+    <div class="now" id="now">Pick an exercise, or do the whole workout</div>
+    <div class="key" id="key">–</div>
+    <div class="notes" id="notes"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="live" id="live"></div>
+    <div class="history" id="history"></div>
+  </div>
+  <div class="legend"><span><i style="background:var(--ok)"></i>on pitch</span><span><i style="background:var(--low)"></i>flat</span><span><i style="background:var(--high)"></i>sharp</span><span><i style="box-shadow:inset 0 0 0 1.5px var(--muted)"></i>not heard</span></div>
 
   <div class="error" id="error"></div>
-  <button class="go" id="go">Start warmup</button>
+  <button class="go" id="go">Start full workout</button>
   <label class="toggle"><input type="checkbox" id="speak" checked> Say the feedback out loud</label>
 
   <div class="tips">
-    <b>Wear wired earbuds.</b> The piano plays along with you, so if it comes out of the speaker the mic hears the piano instead of you. With earbuds in, the mic only hears you.<br><br>
-    The piano plays a 5-note scale up and down while you sing with it. After each loop you get quick feedback, then it moves up a half step. It starts with a hum, then opens up to "Ah". Nothing is recorded or saved.
+    <b>Wear wired earbuds.</b> The piano plays along with you, so if it comes out of the speaker the mic hears the piano instead of you.<br><br>
+    Like your video: the piano gives you the note, you sing the pattern with it, and it moves up a half step every loop, then back down. After each loop you hear one word: <b>nice</b>, <b>flat</b> or <b>sharp</b>. Nothing is recorded or saved.
   </div>
 </main>
 
@@ -107,22 +118,32 @@
   import { createPiano } from "./piano.js";
 
   const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
-  const STEPS = [0, 2, 4, 5, 7, 5, 4, 2, 0]; // 5-note scale up and down
-  const HOLD = 2;     // the last note is held this many beats
-  const GAP = 3;      // beats between loops for feedback and the next starting note
-  const HUM_LOOPS = 2; // hum this many loops, then "Ah"
   const IN_TUNE_CENTS = 25;
   const MIN_CLARITY = 0.9;
   const MIN_HZ = 60, MAX_HZ = 1500;
-  const ORDINALS = ["first", "second", "third", "fourth", "top", "fourth", "third", "second", "last"];
+
+  // Each exercise is a loop of [semitones above the key, beats]. null is a rest.
+  // `cue` is the piano alone giving you the note; `sing` is played with you and scored.
+  // Patterns and speeds follow the Aussie Vocal Coach "Daily Vocal Exercises" workout.
+  const RUN = [0, 2, 4, 5, 7, 5, 4, 2, 0, 2, 4, 5, 7, 5, 4, 2].map((s) => [s, 0.5]);
+  const EXERCISES = [
+    { name: "Fifths", desc: "1 · 5-5 · 1 · 5 · 1, slow and steady", bpm: 60, offset: 0,
+      cue: [[0, 2]], sing: [[0, 1], [7, 0.5], [7, 0.5], [0, 1], [7, 1], [0, 2]] },
+    { name: "Fifths, part 2", desc: "1 · 5 · 1 · 5 · 1, one note per beat", bpm: 60, offset: 2,
+      cue: [], sing: [[0, 1], [7, 1], [0, 1], [7, 1], [0, 2], [null, 2]] },
+    { name: "5-note scale", desc: "Up the scale, hold the top, back down", bpm: 60, offset: 0,
+      cue: [[0, 2]], sing: [[0, 0.5], [2, 0.5], [4, 0.5], [5, 0.5], [7, 2.5], [5, 0.5], [4, 0.5], [2, 0.5], [0, 1]] },
+    { name: "Fast runs", desc: "Quick 5-note runs, twice per key", bpm: 110, offset: 2,
+      cue: [[0, 2], [null, 1.75]], sing: [...RUN, [0, 2], [null, 1.5], ...RUN, [0, 1.5], [null, 0.5]] },
+  ];
 
   const $ = (id) => document.getElementById(id);
   const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
   const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 
-  let startMidi = load("warmupStart", 60);
-  let bpm = load("warmupBpm2", 90);
-  let climb = load("warmupClimb", 5);
+  let baseMidi = load("workoutBase", 55); // G3
+  let climb = load("workoutClimb", 9);
+  let speed = load("workoutSpeed", 100);
 
   let ctx, piano, stream, analyser, detector, buffer, wakeLock;
   let running = false;
@@ -131,24 +152,18 @@
   const midiFromHz = (hz) => 69 + 12 * Math.log2(hz / 440);
 
   function render() {
-    $("keyVal").textContent = label(startMidi);
-    $("bpmVal").textContent = bpm;
+    $("keyVal").textContent = label(baseMidi);
     $("climbVal").textContent = climb;
-    drawDots(startMidi);
-  }
-
-  function drawDots(key, results = []) {
-    $("dots").innerHTML = "";
-    STEPS.forEach((s, i) => {
-      const d = document.createElement("div");
-      d.className = "dot" + (results[i] ? " " + results[i].kind : "");
-      d.innerHTML = `<div class="ball"></div><div class="nm">${label(key + s)}</div>`;
-      $("dots").append(d);
+    $("speedVal").textContent = `${speed}%`;
+    $("exercises").innerHTML = "";
+    EXERCISES.forEach((ex, i) => {
+      const b = document.createElement("button");
+      b.className = "ex";
+      b.id = `ex${i}`;
+      b.innerHTML = `<span class="num">${i + 1}</span><span class="txt"><div class="nm">${ex.name}</div><div class="ds">${ex.desc}</div></span>`;
+      b.onclick = () => { if (!running) start([i]); };
+      $("exercises").append(b);
     });
-  }
-
-  function highlight(i) {
-    [...$("dots").children].forEach((d, j) => d.classList.toggle("now", j === i));
   }
 
   async function ensureAudio() {
@@ -180,7 +195,6 @@
     return clarity >= MIN_CLARITY && hz >= MIN_HZ && hz <= MAX_HZ ? midiFromHz(hz) : null;
   }
 
-  // Run a frame-by-frame loop until audio time `until` (or until stopped)
   function frames(until, fn) {
     return new Promise((resolve) => {
       const tick = () => {
@@ -202,132 +216,157 @@
     return { kind: Math.abs(cents) <= IN_TUNE_CENTS ? "ok" : cents < 0 ? "low" : "high", cents };
   }
 
-  // Turn one loop's results into a short coach-style line
-  function feedbackFor(results) {
+  // One or two words, so it fits between loops like a real coach
+  function verdict(results) {
     const heard = results.filter((r) => r.kind !== "miss");
-    if (heard.length < results.length / 2) return "I couldn't hear you. Sing out a little more.";
-    const flat = results.flatMap((r, i) => (r.kind === "low" ? [i] : []));
-    const sharp = results.flatMap((r, i) => (r.kind === "high" ? [i] : []));
-    const off = flat.length + sharp.length;
-    if (off === 0) return ["Nice, right on!", "Beautiful, all on pitch.", "Clean. Keep going."][Math.floor(Math.random() * 3)];
-    if (off === 1) {
-      const i = flat[0] ?? sharp[0];
-      return `A little ${flat.length ? "flat" : "sharp"} on the ${ORDINALS[i]} note.`;
-    }
-    if (flat.length >= off * 0.7) return flat.includes(4) ? "Flat on the way up. Lift into the top note." : "A bit flat. Think up as you sing.";
-    if (sharp.length >= off * 0.7) return "A bit sharp. Relax and let it settle.";
-    return "Close. A few notes drifted, stay steady.";
+    if (heard.length < results.length / 2) return { word: "Louder", kind: "miss" };
+    const ok = heard.filter((r) => r.kind === "ok").length;
+    if (ok >= heard.length * 0.8) return { word: ["Nice", "Good", "Yes"][Math.floor(Math.random() * 3)], kind: "ok" };
+    const flat = heard.filter((r) => r.kind === "low").length;
+    const sharp = heard.filter((r) => r.kind === "high").length;
+    return flat >= sharp ? { word: "Flat", kind: "low" } : { word: "Sharp", kind: "high" };
   }
 
   function say(text) {
     if (!$("speak").checked || !("speechSynthesis" in window)) return;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 1.05;
+    u.rate = 1.1;
     speechSynthesis.speak(u);
   }
 
-  async function warmup() {
+  // Lay one loop out in time: every note with its start beat and whether it's scored
+  function layout(ex, key) {
+    const events = [];
+    let beat = 0;
+    for (const [part, scored] of [[ex.cue, false], [ex.sing, true]]) {
+      for (const [step, beats] of part) {
+        if (step !== null) events.push({ midi: key + step, start: beat, beats, scored });
+        beat += beats;
+      }
+    }
+    return { events, beats: beat };
+  }
+
+  function drawNotes(events, results = []) {
+    $("notes").innerHTML = "";
+    events.filter((e) => e.scored).forEach((e, i) => {
+      const d = document.createElement("div");
+      d.className = "n" + (results[i] ? " " + results[i].kind : "");
+      d.style.width = `${Math.max(10, e.beats * 22)}px`;
+      $("notes").append(d);
+    });
+  }
+
+  async function runExercise(index) {
+    const ex = EXERCISES[index];
+    const beat = 60 / (ex.bpm * speed / 100);
+    const low = baseMidi + ex.offset;
+    const keys = [];
+    for (let k = 0; k <= climb; k++) keys.push(low + k);
+    for (let k = climb - 1; k >= 0; k--) keys.push(low + k);
+
+    document.querySelectorAll(".ex").forEach((b) => b.classList.remove("active"));
+    $(`ex${index}`).classList.add("active");
+    $("history").innerHTML = "";
+    $("feedback").textContent = "";
+    $("now").textContent = `Exercise ${index + 1}: ${ex.name} · loading piano…`;
+    await piano.preload(keys.flatMap((k) => layout(ex, k).events.map((e) => e.midi)));
+
+    let t = ctx.currentTime + 0.3;
+    for (let loop = 0; loop < keys.length && running; loop++) {
+      const key = keys[loop];
+      const { events, beats } = layout(ex, key);
+      const scoredEvents = events.filter((e) => e.scored);
+      $("now").textContent = `Exercise ${index + 1}: ${ex.name} · ${loop + 1} of ${keys.length}`;
+      $("key").textContent = label(key);
+      drawNotes(events);
+
+      for (const e of events) piano.play(e.midi, t + e.start * beat, e.beats * beat * 0.95, e.scored ? 0.65 : 0.85);
+
+      const loopStart = t;
+      const samples = scoredEvents.map(() => []);
+      const lastEnd = Math.max(...scoredEvents.map((e) => e.start + e.beats));
+      const cells = [...$("notes").children];
+      await frames(loopStart + lastEnd * beat, (now) => {
+        const pos = (now - loopStart) / beat;
+        const i = scoredEvents.findIndex((e) => pos >= e.start && pos < e.start + e.beats);
+        cells.forEach((c, j) => c.classList.toggle("cur", j === i));
+        const midi = readPitch();
+        $("live").textContent = midi === null ? "" : `You: ${label(midi)}`;
+        // Skip the first part of each note while the voice moves onto it
+        if (midi !== null && i >= 0 && (pos - scoredEvents[i].start) / scoredEvents[i].beats > 0.3) samples[i].push(midi);
+      });
+      if (!running) break;
+      $("live").textContent = "";
+
+      const results = scoredEvents.map((e, i) => score(samples[i], e.midi));
+      drawNotes(events, results);
+      const v = verdict(results);
+      $("feedback").textContent = v.word;
+      $("feedback").className = "feedback " + v.kind;
+      say(v.word);
+      const chip = document.createElement("span");
+      chip.className = v.kind;
+      chip.title = label(key);
+      $("history").append(chip);
+
+      t = loopStart + beats * beat; // next loop starts right away, like the video
+    }
+    $(`ex${index}`).classList.remove("active");
+    if (running) $(`ex${index}`).classList.add("done");
+  }
+
+  async function start(list) {
     $("error").textContent = "";
     if (!(await ensureAudio())) return;
     running = true;
     $("go").textContent = "Stop";
     $("go").classList.add("stop");
     $("controls").setAttribute("aria-disabled", "true");
-    $("history").innerHTML = "";
-    $("feedback").textContent = "";
+    $("exercises").setAttribute("aria-disabled", "true");
+    document.querySelectorAll(".ex").forEach((b) => b.classList.remove("done"));
     try { wakeLock ??= await navigator.wakeLock?.request("screen"); } catch {}
+    document.querySelector(".stage").scrollIntoView({ behavior: "smooth", block: "center" });
 
-    // Up `climb` half steps, then back down to where we started
-    const keys = [];
-    for (let k = 0; k <= climb; k++) keys.push(startMidi + k);
-    for (let k = climb - 1; k >= 0; k--) keys.push(startMidi + k);
-
-    $("phase").textContent = "Loading piano…";
-    await piano.preload(keys.flatMap((k) => STEPS.map((s) => k + s)));
-
-    const beat = 60 / bpm;
-    // Play the first starting note so you can find it, then begin
-    let t = ctx.currentTime + 0.2;
-    $("vowel").textContent = "Hum";
-    $("phase").textContent = `Here's your starting note: ${label(keys[0])}`;
-    drawDots(keys[0]);
-    piano.play(keys[0], t, beat * 2);
-    t += beat * GAP;
-    await frames(t, () => {});
-
-    for (let loop = 0; loop < keys.length && running; loop++) {
-      const key = keys[loop];
-      const vowel = loop < HUM_LOOPS ? "Hum" : "Ah";
-      $("vowel").textContent = vowel;
-      $("phase").textContent = `Sing along · ${label(key)} · loop ${loop + 1} of ${keys.length}`;
-      drawDots(key);
-
-      // Piano plays every note with you; the last one is held
-      STEPS.forEach((s, i) => {
-        const len = i === STEPS.length - 1 ? beat * HOLD : beat * 0.95;
-        piano.play(key + s, t + i * beat, len, 0.7);
-      });
-      const loopStart = t;
-      const loopEnd = t + (STEPS.length - 1 + HOLD) * beat;
-      const samples = STEPS.map(() => []);
-      await frames(loopEnd, (now) => {
-        const pos = (now - loopStart) / beat;
-        const i = Math.min(STEPS.length - 1, Math.floor(pos));
-        highlight(i);
-        const midi = readPitch();
-        $("live").textContent = midi === null ? "" : `You: ${label(midi)}`;
-        // Skip the start of each note while the voice moves onto it
-        if (midi !== null && i >= 0 && pos - i > 0.3) samples[i].push(midi);
-      });
-      if (!running) break;
-      highlight(-1);
-      $("live").textContent = "";
-
-      const results = STEPS.map((s, i) => score(samples[i], key + s));
-      drawDots(key, results);
-      const hits = results.filter((r) => r.kind === "ok").length;
-      const line = feedbackFor(results);
-      $("feedback").textContent = line;
-      say(line);
-      const chip = document.createElement("span");
-      chip.textContent = `${label(key)} ${hits}/${STEPS.length}`;
-      if (hits === STEPS.length) chip.className = "good";
-      $("history").append(chip);
-
-      // Gap: feedback, then the next starting note on the last beat
-      t = loopEnd + beat * 0.5;
-      const next = keys[loop + 1];
-      if (next !== undefined) piano.play(next, t + beat * (GAP - 1.5), beat * 1.2, 0.8);
-      t += beat * GAP;
-      await frames(t, () => {});
+    for (let n = 0; n < list.length && running; n++) {
+      await runExercise(list[n]);
+      if (running && n < list.length - 1) {
+        $("now").textContent = "Quick breather";
+        $("key").textContent = "💧";
+        $("feedback").textContent = "";
+        $("notes").innerHTML = "";
+        say("Nice. Next exercise.");
+        await frames(ctx.currentTime + 4, () => {});
+      }
     }
-
-    finish(running ? "That's the warmup! Nice work." : "");
+    stop(!running ? "Stopped" : list.length > 1 ? "That's your workout! 🎉" : "Exercise done! 🎉");
   }
 
-  function finish(message) {
+  function stop(message) {
+    const finished = running && message !== "Stopped";
     running = false;
-    $("go").textContent = "Start warmup";
+    $("go").textContent = "Start full workout";
     $("go").classList.remove("stop");
     $("controls").removeAttribute("aria-disabled");
-    highlight(-1);
+    $("exercises").removeAttribute("aria-disabled");
+    document.querySelectorAll(".ex").forEach((b) => b.classList.remove("active"));
     $("live").textContent = "";
-    if (message) { $("phase").textContent = message; say(message); }
-    else $("phase").textContent = "Stopped";
+    $("now").textContent = message;
+    if (finished) say(message.startsWith("That's") ? "That's your workout. Great job." : "Nice work.");
   }
 
-  function setKey(m) { startMidi = Math.max(36, Math.min(72, m)); save("warmupStart", startMidi); render(); }
-  function setBpm(b) { bpm = Math.max(50, Math.min(200, b)); save("warmupBpm2", bpm); render(); }
-  function setClimb(c) { climb = Math.max(1, Math.min(12, c)); save("warmupClimb", climb); render(); }
+  function setBase(m) { baseMidi = Math.max(36, Math.min(72, m)); save("workoutBase", baseMidi); render(); }
+  function setClimb(c) { climb = Math.max(1, Math.min(14, c)); save("workoutClimb", climb); render(); }
+  function setSpeed(s) { speed = Math.max(50, Math.min(150, s)); save("workoutSpeed", speed); render(); }
 
-  $("keyDown").onclick = () => setKey(startMidi - 1);
-  $("keyUp").onclick = () => setKey(startMidi + 1);
-  $("bpmDown").onclick = () => setBpm(bpm - 10);
-  $("bpmUp").onclick = () => setBpm(bpm + 10);
+  $("keyDown").onclick = () => setBase(baseMidi - 1);
+  $("keyUp").onclick = () => setBase(baseMidi + 1);
   $("climbDown").onclick = () => setClimb(climb - 1);
   $("climbUp").onclick = () => setClimb(climb + 1);
-  $("go").onclick = () => (running ? finish("") : warmup());
+  $("speedDown").onclick = () => setSpeed(speed - 10);
+  $("speedUp").onclick = () => setSpeed(speed + 10);
+  $("go").onclick = () => (running ? stop("Stopped") : start(EXERCISES.map((_, i) => i)));
   render();
 </script>
 </body>
