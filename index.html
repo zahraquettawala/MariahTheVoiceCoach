@@ -17,6 +17,12 @@
   .top { display: flex; align-items: center; justify-content: space-between; }
   .brand { font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: .01em; display: flex; align-items: baseline; gap: 8px; }
   .brand .tag { font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
+  .meet { display: flex; gap: 14px; padding: 16px; align-items: flex-start; }
+  .meet .avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--accent-soft); overflow: hidden; flex: none; display: grid; place-items: center; }
+  .meet .avatar > div { width: 52px; height: 52px; margin-top: 6px; }
+  .meet .name { font-family: var(--serif); font-size: 18px; font-weight: 500; }
+  .meet .role { font-size: 12px; font-weight: 600; color: var(--accent-ink); letter-spacing: .02em; }
+  .meet .line { margin: 8px 0 0; color: var(--ink-2); font-size: 14.5px; line-height: 1.45; }
   .hero { position: relative; overflow: hidden; padding: 22px 20px 20px; background: linear-gradient(160deg, #fff 0%, #fbf1f3 100%); }
   .hero .copy { position: relative; z-index: 1; max-width: 60%; display: flex; flex-direction: column; gap: 6px; }
   .hero .h2 { font-size: 23px; }
@@ -35,8 +41,16 @@
   <div>
     <div class="eyebrow" id="date"></div>
     <h1 id="greet">Good evening</h1>
-    <p class="sub" style="margin:6px 0 0">I'm Mariah the Sloth, your vocal coach. Let's train your voice.</p>
   </div>
+
+  <a class="card meet" href="welcome.html">
+    <div class="avatar"><div data-sloth="happy" data-pose="head"></div></div>
+    <div class="grow">
+      <div class="name">Mariah the Sloth</div>
+      <div class="role">Your vocal coach</div>
+      <p class="line">“Hi! I'll play along on piano and tell you after every loop if you're on pitch. Ready to train your voice?”</p>
+    </div>
+  </a>
 
   <section class="card hero">
     <div class="art" data-sloth="happy"></div>
@@ -78,6 +92,11 @@
   import { stats } from "./store.js";
   import { drawSloths } from "./sloth.js";
   import { tabbar, greeting } from "./ui.js";
+
+  // First visit: Mariah introduces herself
+  let met = true;
+  try { met = localStorage.getItem("mariahMet") === "1"; } catch {}
+  if (!met) location.replace("welcome.html");
 
   const $ = (id) => document.getElementById(id);
   $("greet").textContent = greeting();
