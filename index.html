@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem("lentoTheme")||"studio"}catch(e){}</script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("lentoTheme")||"neutral"}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Lento">
-<meta name="theme-color" content="#fbf4ee">
+<meta name="theme-color" content="#f6f5f2">
 <title>Lento · Vocal coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +29,7 @@
 <main class="scene">
   <div class="top">
     <span class="brand">Lento</span>
-    <span class="pill" id="streak">🔥 0</span>
+    <span class="pill" id="streak">0-day streak</span>
   </div>
   <div class="grow-space"></div>
   <div class="say fade-in" id="say">Good evening! Ready to sing?<small id="sub">Warm-up, scales, your song and a cooldown</small></div>
@@ -56,7 +56,7 @@
   const minutes = buildLesson({ song }).minutes;
   const today = s.count && new Date(JSON.parse(localStorage.getItem("lentoSessions") ?? "[]").at(-1)?.at).toDateString() === new Date().toDateString();
 
-  $("streak").textContent = `🔥 ${s.streak}`;
+  $("streak").textContent = `${s.streak}-day streak`;
   $("say").firstChild.textContent = today ? "You sang today! Want to go again?" : `${greeting()}! Ready to sing?`;
   $("sub").textContent = song ? `Warm-up, scales, ${song.title} and a cooldown` : "Warm-up, scales and a cooldown";
   $("meta").textContent = `About ${minutes} minutes${s.lastAccuracy !== null ? ` · last time ${s.lastAccuracy}% on pitch` : ""}`;

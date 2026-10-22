@@ -195,6 +195,11 @@ a.row:active, button.row:active, a.card:active { transform: scale(.985); }
 .choices { width: 100%; display: flex; flex-direction: column; gap: 10px; }
 .choice { width: 100%; display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; background: var(--surface); border: 2px solid var(--line); font-size: 16px; font-weight: 600; text-align: left; box-shadow: var(--shadow); }
 .choice .e { font-size: 26px; }
+.choice .ic { width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-ink); }
+.choice .ic svg { width: 20px; height: 20px; }
+.choice .grow { flex: 1; }
+.choice .hint-line { font-size: 13px; font-weight: 500; color: var(--ink-3); margin-top: 1px; }
+.choice .chev { color: var(--ink-3); font-size: 20px; }
 .choice[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
 .steps { width: 100%; display: flex; gap: 6px; }
 .steps i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); transition: background .3s; }
@@ -254,3 +259,37 @@ a.row:active, button.row:active, a.card:active { transform: scale(.985); }
   --shadow: 0 3px 0 rgba(31, 27, 18, .05), 0 10px 26px rgba(214, 170, 0, .10);
   color-scheme: light;
 }
+
+/* Neutral: calm and professional. Off-white, near-black, one deep green accent, no glow */
+[data-theme="neutral"] {
+  --bg: #f6f5f2;
+  --bg-glow: linear-gradient(transparent, transparent);
+  --surface: #ffffff;
+  --surface-2: #fafaf8;
+  --ink: #18181b;
+  --ink-2: #52525b;
+  --ink-3: #9a9aa2;
+  --line: #e6e4df;
+  --accent: #2f6f5e;
+  --accent-ink: #2a6152;
+  --accent-soft: #e5efeb;
+  --ok: #2f855a;
+  --ok-soft: #e1f0e7;
+  --low: #c07a2c;
+  --low-soft: #f6ebdd;
+  --high: #c2453d;
+  --high-soft: #f6e0de;
+  --bar: rgba(255, 255, 255, .9);
+  --cta: #18181b;
+  --cta-ink: #ffffff;
+  --cta-shadow: 0 1px 2px rgba(0, 0, 0, .12);
+  --halo: radial-gradient(closest-side, rgba(47, 111, 94, .07), transparent);
+  --shadow: 0 1px 2px rgba(24, 24, 27, .04), 0 4px 16px rgba(24, 24, 27, .04);
+  --serif: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --radius: 16px;
+  color-scheme: light;
+}
+[data-theme="neutral"] h1, [data-theme="neutral"] .h1, [data-theme="neutral"] h2, [data-theme="neutral"] .h2 { font-weight: 600; letter-spacing: -.025em; }
+[data-theme="neutral"] .say { font-weight: 600; letter-spacing: -.01em; }
+[data-theme="neutral"] .btn { border-radius: 14px; }
+[data-theme="neutral"] .tabbar a.sing span { border-color: var(--bg); }
