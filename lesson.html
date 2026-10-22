@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lento">
+<meta name="theme-color" content="#f7f3ef">
+<title>Vocal lesson · Lento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<link rel="icon" href="sloth.svg">
+<link rel="apple-touch-icon" href="sloth.svg">
+<style>
+  /* Check-in */
+  #checkin { padding-bottom: calc(32px + env(safe-area-inset-bottom)); gap: 20px; }
+  .nav { display: flex; align-items: center; justify-content: space-between; }
+  .nav .mid { text-align: center; font-weight: 600; font-size: 15px; }
+  .welcome { display: flex; gap: 16px; align-items: center; }
+  .welcome .art { width: 92px; height: 110px; flex: none; }
+  .welcome h1 { font-size: 26px; }
+  .moods { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .mood { padding: 12px 6px; border-radius: 14px; background: var(--surface); border: 1.5px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .mood .e { font-size: 22px; }
+  .mood[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+  .plan .row { padding: 11px 16px; }
+  .plan .sec { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); width: 74px; flex: none; }
+  .plan .row .title { font-size: 14.5px; }
+  .plan .row a { color: var(--accent-ink); font-weight: 600; }
+  #settings { padding: 4px 16px; }
+  #settings .row { padding: 12px 0; }
+  .toggle { width: 44px; height: 26px; border-radius: 13px; background: var(--line); position: relative; transition: background .2s; flex: none; }
+  .toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: left .2s; }
+  .toggle[aria-checked="true"] { background: var(--accent); }
+  .toggle[aria-checked="true"]::after { left: 21px; }
+
+  /* The lesson stage: one fixed screen, nothing to scroll or tap mid-session */
+  #stage { position: fixed; inset: 0; z-index: 5; background: var(--bg); }
+  #stage .inner { max-width: 460px; height: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 12px;
+    padding: max(12px, env(safe-area-inset-top)) 18px calc(14px + env(safe-area-inset-bottom)); }
+  .bar { display: flex; align-items: center; gap: 12px; }
+  .tracker { flex: 1; display: grid; gap: 6px; }
+  .tracker .t { display: flex; flex-direction: column; gap: 5px; }
+  .tracker .t span { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; position: relative; }
+  .tracker .t i { position: absolute; inset: 0; width: 0; background: var(--accent); transition: width .4s; }
+  .tracker .t b { font-size: 10.5px; font-weight: 600; color: var(--ink-3); letter-spacing: .02em; }
+  .tracker .t.on b { color: var(--accent-ink); }
+  .ex-head h2 { font-size: 24px; }
+  .ex-head .sub { margin-top: 2px; }
+  .lento { display: flex; gap: 12px; align-items: flex-end; }
+  .lento .art { width: 74px; height: 74px; flex: none; border-radius: 50%; background: var(--accent-soft); overflow: hidden; display: grid; place-items: center; }
+  .lento .art > div { width: 68px; height: 68px; margin-top: 8px; }
+  .bubble { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 16px 16px 16px 4px; padding: 10px 14px; box-shadow: var(--shadow); min-height: 62px; }
+  .phase { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); }
+  .phase.demo { color: var(--accent-ink); } .phase.you { color: var(--ok); } .phase.fix { color: var(--low); }
+  .bubble .says { font-size: 15.5px; font-weight: 500; margin-top: 2px; }
+  .says.ok { color: var(--ok); } .says.low { color: var(--low); } .says.high { color: var(--high); } .says.breathy { color: var(--ink-2); }
+  .lane-card { flex: 1; min-height: 0; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .lane-top { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-3); }
+  .lane-top .pill { font-variant-numeric: tabular-nums; }
+  #lane { flex: 1; min-height: 110px; width: 100%; display: block; }
+  #keys { height: 56px; width: 100%; display: block; flex: none; }
+  .history { display: flex; flex-wrap: wrap; gap: 4px; min-height: 8px; }
+  .history span { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .history span.ok { background: var(--ok); } .history span.low { background: var(--low); } .history span.high { background: var(--high); } .history span.breathy { background: var(--ink-3); }
+  .controls { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+
+  /* Up next */
+  .overlay { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 24px; background: rgba(247, 243, 239, .86); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  .overlay .card { width: 100%; max-width: 360px; padding: 24px 20px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  .ring { width: 64px; height: 64px; margin: 6px 0; position: relative; display: grid; place-items: center; font-family: var(--serif); font-size: 26px; }
+  .ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 4; }
+
+  /* Done */
+  #done { gap: 18px; padding-bottom: calc(32px + env(safe-area-inset-bottom)); }
+  .summary { padding: 22px; display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; }
+  .summary .big { font-family: var(--serif); font-size: 54px; line-height: 1; }
+  .summary .art { width: 110px; height: 132px; }
+  .acc { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .acc.ok { color: var(--ok); } .acc.low { color: var(--low); } .acc.high { color: var(--high); }
+</style>
+</head>
+<body>
+
+<!-- 1. Check-in: how are you feeling, and today's plan -->
+<main class="app" id="checkin">
+  <div class="nav">
+    <a class="icon-btn" href="./" aria-label="Back to Today"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <div class="mid">Vocal lesson</div>
+    <button class="icon-btn" id="gear" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+  </div>
+
+  <div class="welcome">
+    <div class="art" id="hello" data-sloth="happy"></div>
+    <div>
+      <span class="eyebrow">Lento</span>
+      <h1 id="ask">How's your voice feeling today?</h1>
+    </div>
+  </div>
+
+  <div class="moods" id="moods"></div>
+  <p class="sub" id="moodLine"></p>
+
+  <section class="card" id="settings" hidden>
+    <div class="row"><span class="grow title">Lowest note</span><div class="stepper"><button id="keyDown" aria-label="Lower">−</button><span class="val" id="keyVal">G3</span><button id="keyUp" aria-label="Higher">+</button></div></div>
+    <div class="row"><span class="grow title">Half steps to climb</span><div class="stepper"><button id="climbDown" aria-label="Fewer">−</button><span class="val" id="climbVal">9</span><button id="climbUp" aria-label="More">+</button></div></div>
+    <div class="row"><span class="grow title">Speed</span><div class="stepper"><button id="speedDown" aria-label="Slower">−</button><span class="val" id="speedVal">100%</span><button id="speedUp" aria-label="Faster">+</button></div></div>
+    <div class="row"><span class="grow title">Lento talks</span><button class="toggle" id="speak" role="switch" aria-checked="true" aria-label="Lento talks"></button></div>
+    <div class="row"><span class="grow"><div class="title">Lento demos each exercise</div><div class="meta">She sings it once, then it's your turn</div></span><button class="toggle" id="demo" role="switch" aria-checked="true" aria-label="Lento demos each exercise"></button></div>
+    <div class="row"><span class="grow"><div class="title">Stop and fix mistakes</div><div class="meta">If a phrase is flat, sharp or breathy, she drills it before moving on</div></span><button class="toggle" id="drill" role="switch" aria-checked="true" aria-label="Stop and fix mistakes"></button></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>Today's lesson</h2><button class="sub" id="shuffle" style="font-weight:600;color:var(--accent-ink)">Mix it up</button></div>
+    <div class="list plan" id="plan"></div>
+    <span class="sub" id="planMeta"></span>
+  </section>
+
+  <div class="error" id="error"></div>
+  <button class="btn accent block" id="go">Start your vocal lesson</button>
+  <p class="hint">🎧 <b>Wear wired earbuds</b> so the mic hears you, not the piano. Lento sings each pattern first, then you sing it with the piano. It moves up a half step each time on its own, so you never have to tap.</p>
+</main>
+
+<!-- 2. The lesson itself -->
+<section id="stage" hidden>
+  <div class="inner">
+    <div class="bar">
+      <button class="icon-btn" id="end" aria-label="End lesson"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="tracker" id="tracker"></div>
+    </div>
+
+    <div class="ex-head">
+      <span class="eyebrow" id="exNum">Warm-up</span>
+      <h2 id="exName">Humming fifths</h2>
+      <div class="sub" id="exDesc"></div>
+    </div>
+
+    <div class="lento">
+      <div class="art"><div id="mascot" data-sloth="happy" data-pose="head"></div></div>
+      <div class="bubble"><div class="phase" id="phase">Lento</div><div class="says" id="says">Here we go.</div></div>
+    </div>
+
+    <section class="card lane-card">
+      <div class="lane-top"><span class="pill" id="keyPill">Key –</span><span id="loopInfo"></span></div>
+      <canvas id="lane" aria-label="Target notes and your pitch"></canvas>
+      <canvas id="keys" aria-label="Piano keyboard showing the note to sing"></canvas>
+      <div class="history" id="history"></div>
+    </section>
+
+    <div class="controls">
+      <button class="btn accent" id="pause"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg><span>Pause</span></button>
+      <button class="btn ghost" id="skip"><span>Skip</span><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M5 5v14l9-7zM15 5h3v14h-3z"/></svg></button>
+    </div>
+  </div>
+</section>
+
+<div class="overlay" id="upnext" hidden>
+  <div class="card">
+    <span class="eyebrow" id="nextSec">Up next</span>
+    <h2 id="nextName"></h2>
+    <span class="sub" id="nextDesc"></span>
+    <div class="ring"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="29" stroke="var(--line)"/><circle id="ringArc" cx="32" cy="32" r="29" stroke="var(--accent)" stroke-dasharray="182.2" stroke-dashoffset="0" stroke-linecap="round"/></svg><span id="count">4</span></div>
+    <button class="btn ghost" id="nextNow" style="height:42px">Start now</button>
+  </div>
+</div>
+
+<!-- 3. Done -->
+<main class="app" id="done" hidden>
+  <section class="card summary">
+    <div class="art" data-sloth="proud"></div>
+    <div class="eyebrow">Lesson complete</div>
+    <div class="big" id="sumAcc">0%</div>
+    <div class="sub" id="sumMeta">of notes on pitch</div>
+  </section>
+  <div class="list" id="sumList"></div>
+  <a class="btn accent block" href="progress.html">See your progress</a>
+  <a class="btn ghost block" href="./">Back to Today</a>
+</main>
+
+<script type="module">
+  import { PitchDetector } from "https://cdn.jsdelivr.net/npm/pitchy@4.1.0/+esm";
+  import { createPiano } from "./piano.js";
+  import { createSinger } from "./sing.js";
+  import { drawSloths, setMood } from "./sloth.js";
+  import { layout, settings, byId } from "./exercises.js";
+  import { buildLesson, MOODS, SECTIONS } from "./lesson.js";
+  import { loadSong } from "./song.js";
+  import { saveSession, lastSession } from "./store.js";
+  import { drawKeys, keyRange } from "./keys.js";
+  import { speak, speakAndWait, hush, unlock } from "./voice.js";
+
+  const NOTES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"];
+  const IN_TUNE_CENTS = 25;
+  const MIN_CLARITY = 0.9;
+  const MIN_HZ = 60, MAX_HZ = 1500;
+  const LOUD_DB = -40;        // loud enough to count as singing, for spotting breathy notes
+  const MAX_DRILLS = 3;       // per exercise, so Lento doesn't nag
+  const MAX_RETRIES = 2;      // per phrase
+
+  const $ = (id) => document.getElementById(id);
+  const label = (m) => { const n = Math.round(m); return NOTES[((n % 12) + 12) % 12] + (Math.floor(n / 12) - 1); };
+  const midiFromHz = (hz) => 69 + 12 * Math.log2(hz / 440);
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const oneOf = (list) => list[Math.floor(Math.random() * list.length)];
+
+  let ctx, piano, singer, stream, analyser, detector, buffer, wakeLock;
+  let running = false, paused = false, skipping = false;
+  let pausedMs = 0, pausedAt = 0;
+  let mood = "okay";
+  let lesson = null;
+  let lane = null;            // what the pitch lane is showing
+  let kb = { lo: 48, hi: 71 }; // keyboard range for the current exercise
+  let results = [];           // per exercise, for the summary and progress
+
+  const only = byId(new URLSearchParams(location.search).get("only"));
+
+  // ---------- Check-in ----------
+  function renderMoods() {
+    $("moods").innerHTML = Object.entries(MOODS).map(([id, m]) =>
+      `<button class="mood" data-mood="${id}" aria-pressed="${id === mood}"><span class="e">${m.emoji}</span>${m.label}</button>`).join("");
+    $("moods").querySelectorAll(".mood").forEach((b) => (b.onclick = () => {
+      mood = b.dataset.mood;
+      renderMoods();
+      plan();
+      setMood($("hello"), mood === "tired" ? "sleepy" : mood === "great" ? "sing" : "happy");
+    }));
+    $("moodLine").textContent = only ? "" : MOODS[mood].line;
+  }
+
+  function plan() {
+    lesson = buildLesson({ mood, song: loadSong(), lastSession: lastSession(), only });
+    const rows = [];
+    let prev = null;
+    for (const b of lesson.blocks) {
+      rows.push(`<div class="row"><span class="sec">${b.section === prev ? "" : b.section}</span>
+        <span class="grow"><div class="title">${b.ex.name}</div><div class="meta">${b.ex.free ? `${b.ex.song} · from ${label(b.ex.start)}` : `“${b.ex.sound}” · ${b.ex.desc}`}</div></span></div>`);
+      prev = b.section;
+    }
+    if (!only && !lesson.blocks.some((b) => b.section === "Song")) {
+      rows.splice(rows.length - 1, 0, `<div class="row"><span class="sec">Song</span><span class="grow"><div class="meta"><a href="song.html">Add a song you're practicing</a> and we'll work on it here.</div></span></div>`);
+    }
+    $("plan").innerHTML = rows.join("");
+    $("planMeta").textContent = `About ${Math.max(1, lesson.minutes)} minutes. Every lesson is a little different.`;
+    $("go").textContent = only ? "Start exercise" : "Start your vocal lesson";
+  }
+
+  // ---------- Pitch lane ----------
+  const canvas = $("lane"), g = canvas.getContext("2d");
+
+  function drawLane() {
+    const dpr = window.devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    const line = css("--line"), ink3 = css("--ink-3");
+    const key = lane?.key ?? 55;
+    const top = lane ? Math.max(10, ...lane.events.map((e) => e.midi - key + 3)) : 10;
+    const lo = key - 3, hi = key + top, left = 30;
+    const y = (m) => h - 8 - ((m - lo) / (hi - lo)) * (h - 16);
+    g.font = "500 10px Inter, -apple-system, sans-serif";
+    for (let m = lo; m <= hi; m++) {
+      const rel = ((m - key) % 12 + 12) % 12;
+      g.strokeStyle = rel === 0 ? css("--accent-soft") : line;
+      g.lineWidth = rel === 0 ? 1.5 : 1;
+      g.globalAlpha = rel === 0 || rel === 7 ? 1 : .45;
+      g.beginPath(); g.moveTo(left, y(m)); g.lineTo(w, y(m)); g.stroke();
+      g.globalAlpha = 1;
+      if (rel === 0 || rel === 7) { g.fillStyle = ink3; g.fillText(label(m), 0, y(m) + 3.5); }
+    }
+    if (!lane) return;
+    const x = (beat) => left + (beat / lane.beats) * (w - left - 4);
+    const barH = Math.max(6, (h - 16) / (hi - lo) * .7);
+    let si = 0;
+    for (const e of lane.events) {
+      const r = e.scored ? lane.results?.[si++] : null;
+      const x0 = x(e.start) + 1, x1 = x(e.start + e.beats) - 1, yy = y(e.midi) - barH / 2;
+      g.beginPath();
+      g.roundRect(x0, yy, Math.max(3, x1 - x0), barH, barH / 2);
+      if (!e.scored) { g.setLineDash([3, 3]); g.strokeStyle = ink3; g.lineWidth = 1.2; g.stroke(); g.setLineDash([]); continue; }
+      g.fillStyle = !r ? (lane.demo ? css("--line") : css("--accent-soft")) : r.kind === "ok" ? css("--ok") : r.kind === "low" ? css("--low") : r.kind === "high" ? css("--high") : r.kind === "breathy" ? ink3 : line;
+      g.fill();
+    }
+    // Your voice
+    g.strokeStyle = css("--ink"); g.lineWidth = 2.2; g.lineJoin = "round"; g.lineCap = "round";
+    g.beginPath();
+    let prev = null;
+    for (const p of lane.voice) {
+      if (p.midi === null) { prev = null; continue; }
+      // Show your voice in the octave of the notes, so any octave lines up
+      let m = p.midi; const ref = p.target ?? key + 3.5;
+      m -= 12 * Math.round((m - ref) / 12);
+      const px = x(p.beat), py = y(m);
+      if (prev && Math.abs(prev - m) < 3) g.lineTo(px, py); else g.moveTo(px, py);
+      prev = m;
+    }
+    g.stroke();
+    if (lane.pos !== null && lane.pos >= 0 && lane.pos <= lane.beats) {
+      g.strokeStyle = css("--accent"); g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(x(lane.pos), 4); g.lineTo(x(lane.pos), h - 4); g.stroke();
+    }
+  }
+  function drawKeyboard() {
+    let lit = lane?.lit ?? null, voice = null, voiceKind = "";
+    if (lane && lane.pos !== null) {
+      const now = lane.events.find((e) => lane.pos >= e.start && lane.pos < e.start + e.beats);
+      lit = now?.midi ?? lit;
+      const last = lane.voice[lane.voice.length - 1];
+      if (last && last.midi !== null) {
+        voice = last.midi;
+        if (last.target) {
+          let c = (last.midi - last.target) * 100;
+          c -= 1200 * Math.round(c / 1200);
+          voiceKind = Math.abs(c) <= IN_TUNE_CENTS ? "ok" : c < 0 ? "low" : "high";
+        }
+      }
+    }
+    drawKeys($("keys"), { ...kb, lit, voice, voiceKind });
+  }
+  const animate = () => { if (!$("stage").hidden) { drawLane(); drawKeyboard(); } requestAnimationFrame(animate); };
+
+  // ---------- Audio ----------
+  async function ensureAudio() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await ctx.resume();
+    piano ??= createPiano(ctx);
+    if (!singer) { singer = createSinger(ctx); singer.connect(ctx.destination); }
+    if (stream) return true;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      });
+    } catch {
+      $("error").textContent = "The microphone is blocked. In Safari, tap the \"aA\" button in the address bar, open Website Settings, set Microphone to Allow, then reload.";
+      return false;
+    }
+    const source = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+    buffer = new Float32Array(analyser.fftSize);
+    detector = PitchDetector.forFloat32Array(analyser.fftSize);
+    detector.minVolumeDecibels = -45;
+    return true;
+  }
+
+  // The sung pitch, plus whether there was sound with no clear pitch (air in the tone)
+  function readPitch() {
+    analyser.getFloatTimeDomainData(buffer);
+    let sum = 0;
+    for (let i = 0; i < buffer.length; i++) sum += buffer[i] * buffer[i];
+    const loud = 10 * Math.log10(sum / buffer.length + 1e-12) > LOUD_DB;
+    const [hz, clarity] = detector.findPitch(buffer, ctx.sampleRate);
+    const midi = clarity >= MIN_CLARITY && hz >= MIN_HZ && hz <= MAX_HZ ? midiFromHz(hz) : null;
+    return { midi, airy: loud && midi === null };
+  }
+
+  const live = () => running && !skipping;
+
+  function frames(until, fn) {
+    return new Promise((resolve) => {
+      const tick = () => {
+        const t = ctx.currentTime;
+        if (!live()) return resolve();
+        if (paused) return requestAnimationFrame(tick); // audio clock is frozen while paused
+        if (t >= until) return resolve();
+        fn(t);
+        requestAnimationFrame(tick);
+      };
+      tick();
+    });
+  }
+  const wait = (seconds) => frames(ctx.currentTime + seconds, () => {});
+
+  // ---------- Lento ----------
+  function coach(text, { kind = "", mood: m = null, phase = null } = {}) {
+    $("says").textContent = text;
+    $("says").className = "says " + kind;
+    if (phase) { $("phase").textContent = phase[0]; $("phase").className = "phase " + phase[1]; }
+    if (m) setMood($("mascot"), m);
+  }
+  const DEMO = ["Lento sings it", "demo"], YOU = ["Your turn", "you"], FIX = ["Let's fix that", "fix"], LENTO = ["Lento", ""];
+
+  // Say it out loud and wait until she's finished, so she never talks over the piano
+  async function talk(text) {
+    if (!live()) return;
+    if (settings.speak) await speakAndWait(text); else await wait(Math.min(2.5, 0.6 + text.length * 0.03));
+  }
+
+  function score(samples, target, airy, framesSeen) {
+    if (samples.length < 4) return { kind: airy >= 6 && airy > framesSeen * 0.5 ? "breathy" : "miss" };
+    const sorted = [...samples].sort((a, b) => a - b);
+    let cents = Math.round((sorted[Math.floor(sorted.length / 2)] - target) * 100);
+    cents -= 1200 * Math.round(cents / 1200); // any octave counts
+    return { kind: Math.abs(cents) <= IN_TUNE_CENTS ? "ok" : cents < 0 ? "low" : "high", cents };
+  }
+
+  // Where in the phrase the trouble was, in words
+  function where(ex, events, results, kind) {
+    const bad = results.map((r, i) => (r.kind === kind ? i : -1)).filter((i) => i >= 0);
+    if (bad.length > results.length / 2) return "";
+    const topMidi = Math.max(...events.map((e) => e.midi));
+    if (bad.every((i) => events[i].midi === topMidi)) return " on the top note";
+    if (bad.every((i) => i === 0)) return " on the first note";
+    if (bad.every((i) => i === results.length - 1)) return " on the last note";
+    if (bad.every((i) => i > results.length / 2)) return " on the way down";
+    if (bad.every((i) => i < results.length / 2)) return " on the way up";
+    return "";
+  }
+
+  function verdict(ex, events, results) {
+    const heard = results.filter((r) => r.kind !== "miss");
+    const ok = heard.filter((r) => r.kind === "ok").length;
+    const count = (k) => heard.filter((r) => r.kind === k).length;
+    if (heard.length < results.length / 2) return { said: "I can't quite hear you. Sing out a little more.", kind: "", drill: false };
+    if (ok >= heard.length * 0.8) {
+      return { said: oneOf(["Nice, right on pitch.", "Lovely. Keep going.", "Beautiful. Up we go.", "That's it, keep that up."]), kind: "ok", drill: false };
+    }
+    const drill = ok < heard.length * 0.6;
+    if (!ex.breathy && count("breathy") >= Math.max(2, heard.length * 0.4)) {
+      return { said: `That was a bit breathy${where(ex, events, results, "breathy")}. Take a deeper breath and support it from your belly.`, kind: "breathy", drill };
+    }
+    const flat = count("low"), sharp = count("high");
+    const kind = flat >= sharp ? "low" : "high";
+    const spot = where(ex, events, results, kind);
+    return kind === "low"
+      ? { said: spot ? `You went a little flat${spot}. Think up.` : oneOf(["You're a little flat. Lift it up.", "Just under. Think up."]), kind, drill }
+      : { said: spot ? `You went a little sharp${spot}. Ease off.` : oneOf(["You're a little sharp. Ease off.", "Just over. Let it settle."]), kind, drill };
+  }
+
+  // ---------- One exercise ----------
+  function showBlock(i) {
+    const b = lesson.blocks[i], ex = b.ex;
+    const inSec = lesson.blocks.filter((x) => x.section === b.section);
+    $("exNum").textContent = only ? "Exercise" : `${b.section} · ${inSec.indexOf(b) + 1} of ${inSec.length}`;
+    $("exName").textContent = ex.free ? `${ex.song}: ${ex.name}` : ex.name;
+    $("exDesc").textContent = ex.free ? `Start on ${label(ex.start)}. Sing it through, Lento listens.` : `“${ex.sound}” · ${ex.desc}`;
+    const steps = [...ex.cue, ...ex.sing].map(([st]) => st).filter((st) => st !== null);
+    const low = Math.min(...b.keys), high = Math.max(...b.keys);
+    // A song without a melody could go anywhere, so show a wider keyboard
+    kb = ex.free ? keyRange(low - 5, high + 12) : keyRange(low + Math.min(0, ...steps), high + Math.max(0, ...steps));
+    $("history").innerHTML = "";
+    renderTracker(i, 0);
+  }
+
+  function renderTracker(i, within) {
+    const secs = SECTIONS.filter((s) => lesson.blocks.some((b) => b.section === s));
+    const cur = lesson.blocks[i].section;
+    $("tracker").style.gridTemplateColumns = `repeat(${secs.length}, 1fr)`;
+    $("tracker").innerHTML = secs.map((s) => {
+      const bs = lesson.blocks.map((b, j) => [b, j]).filter(([b]) => b.section === s);
+      const doneN = bs.filter(([, j]) => j < i).length + (s === cur ? within : 0);
+      return `<div class="t ${s === cur ? "on" : ""}"><span><i style="width:${(doneN / bs.length) * 100}%"></i></span><b>${only ? lesson.blocks[0].ex.name : s}</b></div>`;
+    }).join("");
+  }
+
+  // Play one loop of the pattern in `key` starting at audio time t. Lento sings along if `withLento`.
+  // Returns the per-note results, or null if Lento was only demoing.
+  async function playLoop(ex, key, t, beat, { listen = true, withLento = 0, demo = false } = {}) {
+    const { events, beats } = layout(ex, key);
+    const scored = events.filter((e) => e.scored);
+    lane = { events, beats, key, voice: [], results: null, pos: 0, demo };
+    $("keyPill").textContent = `Key ${label(key)}`;
+    for (const e of events) piano.play(e.midi, t + e.start * beat, e.beats * beat * 0.95, e.scored ? (demo ? 0.45 : 0.6) : 0.8);
+    if (withLento) for (const e of scored) singer.sing(e.midi, t + e.start * beat, e.beats * beat * 0.97, e.syll, withLento);
+
+    const samples = scored.map(() => []), airy = scored.map(() => 0), seen = scored.map(() => 0);
+    const lastEnd = Math.max(...scored.map((e) => e.start + e.beats));
+    await frames(t + lastEnd * beat, (now) => {
+      const pos = (now - t) / beat;
+      lane.pos = pos;
+      if (!listen) return;
+      const i = scored.findIndex((e) => pos >= e.start && pos < e.start + e.beats);
+      const p = readPitch();
+      lane.voice.push({ beat: pos, midi: p.midi, target: i >= 0 ? scored[i].midi : null });
+      // Skip the first part of each note while the voice moves onto it
+      if (i >= 0 && (pos - scored[i].start) / scored[i].beats > 0.3) {
+        seen[i]++;
+        if (p.midi !== null) samples[i].push(p.midi);
+        else if (p.airy) airy[i]++;
+      }
+    });
+    if (!listen || !live()) return { results: null, next: t + beats * beat, scored };
+    const res = scored.map((e, i) => score(samples[i], e.midi, airy[i], seen[i]));
+    lane.results = res;
+    lane.pos = null;
+    return { results: res, next: t + beats * beat, scored };
+  }
+
+  async function runExercise(b, i) {
+    const ex = b.ex;
+    const beat = 60 / (ex.bpm * lesson.speed / 100);
+    showBlock(i);
+    await piano.preload(b.keys.flatMap((k) => layout(ex, k).events.map((e) => e.midi)));
+    const tally = { hits: 0, total: 0 };
+
+    // 1. Lento demos the pattern once in the first key
+    if (settings.demo && live()) {
+      coach(`Listen first: “${ex.sylls.slice(0, 6).join("-")}${ex.sylls.length > 6 ? "…" : ""}”`, { mood: "sing", phase: DEMO });
+      await talk("Listen first.");
+      $("loopInfo").textContent = "Lento's turn";
+      await playLoop(ex, b.keys[0], ctx.currentTime + 0.3, beat, { listen: false, withLento: 0.8, demo: true });
+      if (!live()) return tally;
+      coach("Your turn. Sing it with the piano.", { mood: "happy", phase: YOU });
+      await talk("Your turn.");
+    } else {
+      coach(`Sing along with the piano on “${ex.sound}”.`, { mood: "sing", phase: YOU });
+    }
+
+    // 2. You sing; 3. it moves a half step on its own after every loop
+    let t = ctx.currentTime + 0.3, drills = 0, retries = 0;
+    for (let loop = 0; loop < b.keys.length && live(); ) {
+      $("loopInfo").textContent = retries ? `Once more in ${label(b.keys[loop])}` : `${loop + 1} of ${b.keys.length}`;
+      renderTracker(i, loop / b.keys.length);
+      const { results: res, next, scored } = await playLoop(ex, b.keys[loop], t, beat, { withLento: retries ? 0.35 : 0 });
+      if (!live()) break;
+      const v = verdict(ex, scored, res);
+      tally.hits += res.filter((r) => r.kind === "ok").length;
+      tally.total += res.length;
+      const chip = document.createElement("span");
+      chip.className = v.kind;
+      $("history").append(chip);
+      t = next; // the next loop starts right away
+
+      // Live coaching: stop, say what happened, and sing that phrase again together until it's right
+      if (settings.drill && v.drill && drills < MAX_DRILLS && retries < MAX_RETRIES) {
+        piano.stopAll(); singer.stopAll();
+        if (!retries) drills++;
+        retries++;
+        coach(v.said, { kind: v.kind, mood: "oops", phase: FIX });
+        await talk(retries === 1 ? `${v.said} Let's do that one again. I'll sing it with you.` : `${v.said} One more time.`);
+        t = ctx.currentTime + 0.3;
+        continue;
+      }
+      if (retries && v.kind === "ok") {
+        coach("That's it! Now keep going.", { kind: "ok", mood: "proud", phase: YOU });
+        say("That's it! Keep going.");
+      } else {
+        coach(v.said, { kind: v.kind, mood: v.kind === "ok" ? "proud" : v.kind ? "oops" : "happy", phase: YOU });
+        say(v.said);
+      }
+      setTimeout(() => live() && !paused && setMood($("mascot"), "sing"), 1400);
+      retries = 0;
+      loop++;
+    }
+    return tally;
+  }
+
+  // A song section with no melody typed in: starting note, then sing it while Lento listens
+  async function runFreeSong(b, i) {
+    const ex = b.ex;
+    showBlock(i);
+    const root = ex.start;
+    await piano.preload([root, root - 12, root + 4, root + 7]);
+    for (let pass = 0; pass < b.keys.length && live(); pass++) {
+      renderTracker(i, pass / b.keys.length);
+      coach(pass ? "Once more from the top." : `Here's your starting note for ${ex.name}.`, { mood: "happy", phase: LENTO });
+      await talk(pass ? "Once more from the top. Here's your note." : `Let's sing ${ex.name} from ${ex.song}. Here's your starting note.`);
+      const t = ctx.currentTime + 0.2;
+      piano.play(root - 12, t, 1.6, 0.4); piano.play(root, t, 1.6, 0.8);
+      piano.play(root, t + 1.4, 1.2, 0.8);
+      lane = { events: [], beats: ex.seconds, key: root, voice: [], results: null, pos: null, lit: root };
+      $("keyPill").textContent = `Start on ${label(root)}`;
+      $("loopInfo").textContent = `${pass + 1} of ${b.keys.length}`;
+      await wait(2.8);
+      coach("Sing it through. I'm listening.", { mood: "happy", phase: YOU });
+      const start = ctx.currentTime;
+      await frames(start + ex.seconds, (now) => {
+        lane.pos = now - start;
+        lane.voice.push({ beat: now - start, midi: readPitch().midi, target: null });
+      });
+      lane.pos = null;
+      if (!live()) break;
+      coach(pass ? "Lovely. That's sounding more confident." : "Nice. Let's run it again.", { kind: "ok", mood: "proud", phase: LENTO });
+    }
+    return null; // not scored without a melody
+  }
+
+  // ---------- Up next ----------
+  async function upNext(b, first) {
+    const ex = b.ex;
+    $("nextSec").textContent = first ? (only ? "Your exercise" : `First up · ${b.section}`) : `Up next · ${b.section}`;
+    $("nextName").textContent = ex.free ? `${ex.song}: ${ex.name}` : ex.name;
+    $("nextDesc").textContent = ex.free ? `Starting note ${label(ex.start)}` : `“${ex.sound}” · ${ex.desc}`;
+    $("upnext").hidden = false;
+    let go = false;
+    const tapped = new Promise((resolve) => ($("nextNow").onclick = () => { go = true; resolve(); }));
+    const lines = {
+      "Warm-up": first ? `Let's warm up your voice. First, ${ex.name.toLowerCase()}.` : `Next warm-up: ${ex.name.toLowerCase()}.`,
+      Scales: `Now some scales. ${ex.name}.`,
+      Song: `Time for your song. ${ex.song}: ${ex.name}.`,
+      Cooldown: `Nice work. Let's cool down with ${ex.name.toLowerCase()}.`,
+    };
+    const line = only ? `${ex.name}. Here we go.` : lines[b.section];
+    coach(line, { mood: "happy", phase: LENTO });
+    const spoken = talk(line);
+    const seconds = 4, start = ctx.currentTime;
+    await Promise.race([tapped, frames(start + seconds, (now) => {
+      const left = seconds - (now - start);
+      $("count").textContent = Math.max(1, Math.ceil(left));
+      $("ringArc").style.strokeDashoffset = String(182.2 * (1 - left / seconds));
+    })]);
+    if (go) hush(); else await spoken;
+    $("upnext").hidden = true;
+  }
+
+  // ---------- The lesson ----------
+  async function start() {
+    $("error").textContent = "";
+    unlock();
+    if (!(await ensureAudio())) return;
+    running = true; paused = false; skipping = false; pausedMs = 0; results = [];
+    setPauseLabel();
+    $("checkin").hidden = true; $("done").hidden = true; $("stage").hidden = false;
+    try { wakeLock ??= await navigator.wakeLock?.request("screen"); } catch {}
+    const began = Date.now();
+
+    for (let i = 0; i < lesson.blocks.length && running; i++) {
+      const b = lesson.blocks[i];
+      skipping = false;
+      showBlock(i);
+      lane = null;
+      await upNext(b, i === 0);
+      const tally = b.ex.free ? await runFreeSong(b, i) : await runExercise(b, i);
+      piano.stopAll(); singer.stopAll();
+      if (tally?.total) results.push({ id: b.ex.id, name: b.ex.name, section: b.section, ...tally });
+      if (running && !skipping) {
+        renderTracker(i, 1);
+        await wait(1.2);
+      }
+    }
+    const finished = running;
+    if (results.length) saveSession({ at: new Date().toISOString(), minutes: (Date.now() - began - pausedMs) / 60000, mood, exercises: results });
+    teardown();
+    if (finished || results.length) showDone(finished);
+    else backToCheckin();
+  }
+
+  function showDone(finished) {
+    $("stage").hidden = true; $("checkin").hidden = true; $("done").hidden = false;
+    const hits = results.reduce((n, r) => n + r.hits, 0), total = results.reduce((n, r) => n + r.total, 0);
+    $("sumAcc").textContent = total ? `${Math.round((hits / total) * 100)}%` : "🎶";
+    $("sumMeta").textContent = total ? `of notes on pitch across ${results.length} exercise${results.length > 1 ? "s" : ""}` : "Nice singing";
+    const tone = (p) => (p >= 75 ? "ok" : p >= 50 ? "low" : "high");
+    $("sumList").innerHTML = results.map((r) => {
+      const p = Math.round((r.hits / r.total) * 100);
+      return `<div class="row"><span class="grow"><div class="title">${r.name}</div><div class="meta">${r.section}</div></span><span class="acc ${tone(p)}">${p}%</span></div>`;
+    }).join("");
+    $("sumList").hidden = !results.length;
+    window.scrollTo(0, 0);
+    if (finished) speak("That's your lesson. Really nice work today. I'm proud of you.");
+  }
+
+  function backToCheckin() {
+    $("stage").hidden = true; $("done").hidden = true; $("checkin").hidden = false;
+    plan();
+  }
+
+  function teardown() {
+    running = false;
+    if (paused) pausedMs += Date.now() - pausedAt;
+    paused = false;
+    piano?.stopAll(); singer?.stopAll();
+    ctx?.resume();
+    hush();
+    $("upnext").hidden = true;
+    try { wakeLock?.release(); } catch {}
+    wakeLock = null;
+  }
+
+  function say(text) {
+    if (settings.speak) speak(text);
+  }
+
+  function setPauseLabel() {
+    $("pause").querySelector("span").textContent = paused ? "Resume" : "Pause";
+    $("pause").querySelector("svg").innerHTML = paused
+      ? '<path d="M7 5v14l12-7z"/>'
+      : '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';
+  }
+
+  // Pausing freezes the audio clock, so the piano and the loop pick up exactly where they left off
+  async function togglePause() {
+    if (!running) return;
+    if (!paused) {
+      paused = true;
+      pausedAt = Date.now();
+      hush();
+      await ctx.suspend();
+      coach("Paused. Tap Resume when you're ready.", { mood: "sleepy", phase: LENTO });
+    } else {
+      await ctx.resume();
+      paused = false;
+      pausedMs += Date.now() - pausedAt;
+      coach("Here we go.", { mood: "sing", phase: YOU });
+    }
+    setPauseLabel();
+  }
+
+  function skip() {
+    if (!running) return;
+    if (paused) togglePause();
+    skipping = true;
+    piano.stopAll(); singer.stopAll(); hush();
+  }
+
+  // ---------- Settings ----------
+  function renderSettings() {
+    $("keyVal").textContent = label(settings.base);
+    $("climbVal").textContent = settings.climb;
+    $("speedVal").textContent = `${settings.speed}%`;
+    for (const k of ["speak", "demo", "drill"]) $(k).setAttribute("aria-checked", String(settings[k]));
+  }
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const change = (fn) => () => { fn(); renderSettings(); plan(); };
+  $("keyDown").onclick = change(() => (settings.base = clamp(settings.base - 1, 36, 72)));
+  $("keyUp").onclick = change(() => (settings.base = clamp(settings.base + 1, 36, 72)));
+  $("climbDown").onclick = change(() => (settings.climb = clamp(settings.climb - 1, 1, 14)));
+  $("climbUp").onclick = change(() => (settings.climb = clamp(settings.climb + 1, 1, 14)));
+  $("speedDown").onclick = change(() => (settings.speed = clamp(settings.speed - 10, 50, 150)));
+  $("speedUp").onclick = change(() => (settings.speed = clamp(settings.speed + 10, 50, 150)));
+  for (const k of ["speak", "demo", "drill"]) $(k).onclick = () => { settings[k] = !settings[k]; renderSettings(); };
+  $("gear").onclick = () => ($("settings").hidden = !$("settings").hidden);
+  $("shuffle").onclick = plan;
+  $("go").onclick = () => { if (!running) start(); };
+  $("pause").onclick = togglePause;
+  $("skip").onclick = skip;
+  $("end").onclick = () => { if (running) { skip(); running = false; } };
+
+  // For automated tests: ?debug exposes what the lane is showing
+  if (new URLSearchParams(location.search).has("debug")) window.lento = { get lane() { return lane; } };
+
+  if (only) { $("ask").textContent = only.name; $("moods").hidden = true; $("shuffle").hidden = true; }
+  renderMoods();
+  renderSettings();
+  plan();
+  drawSloths();
+  animate();
+</script>
+</body>
+</html>

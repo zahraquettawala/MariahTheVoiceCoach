@@ -1,14 +1,55 @@
-// A small sampled piano. Samples live in piano/ every 3 semitones (C, D#, F#, A
-// from C2 to C6); other notes are the nearest sample slightly sped up or slowed down.
-// Piano samples: tonejs-instruments (MIT).
+// A sampled grand piano: the Salamander Grand (a Yamaha C5, CC-BY 3.0 by Alexander Holm).
+// Samples live in piano/ every 3 semitones (C, D#, F#, A from A1 to C7); other notes are
+// the nearest sample slightly sped up or slowed down. Everything plays through a little
+// room sound and a softened top end, so it feels like a piano in a living room.
 
 const SAMPLE_NAMES = { 0: "C", 3: "Ds", 6: "Fs", 9: "A" };
-const LOW = 36, HIGH = 84; // C2 to C6
+const LOW = 33, HIGH = 96; // A1 to C7
+
+// One shared output chain per audio context: warmth EQ, then dry + a short room reverb
+const rooms = new WeakMap();
+function roomFor(ctx) {
+  if (rooms.has(ctx)) return rooms.get(ctx);
+  const input = ctx.createGain();
+  input.gain.value = 3; // the Salamander recordings are quiet; bring them up to the old level
+  const body = ctx.createBiquadFilter();
+  body.type = "lowshelf"; body.frequency.value = 220; body.gain.value = 2.5;
+  const soften = ctx.createBiquadFilter();
+  soften.type = "highshelf"; soften.frequency.value = 4200; soften.gain.value = -5;
+  input.connect(body).connect(soften);
+
+  const dry = ctx.createGain(), wet = ctx.createGain(), reverb = ctx.createConvolver();
+  dry.gain.value = 0.9; wet.gain.value = 0.22;
+  reverb.buffer = roomImpulse(ctx, 1.8);
+  soften.connect(dry).connect(ctx.destination);
+  soften.connect(reverb).connect(wet).connect(ctx.destination);
+  rooms.set(ctx, input);
+  return input;
+}
+
+// A small wooden room: decaying noise, darker as it fades, with a few early reflections
+function roomImpulse(ctx, seconds) {
+  const rate = ctx.sampleRate, n = Math.floor(rate * seconds);
+  const ir = ctx.createBuffer(2, n, rate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = ir.getChannelData(ch);
+    let lp = 0;
+    for (let i = 0; i < n; i++) {
+      const t = i / rate;
+      const k = 0.35 + 0.6 * Math.exp(-t * 3); // lowpass closes over time
+      lp += k * ((Math.random() * 2 - 1) - lp);
+      d[i] = lp * Math.exp(-t * 3.4);
+    }
+    for (const ms of [11, 19, 29, 41]) d[Math.floor((ms + ch * 3) * rate / 1000)] += 0.5 * Math.exp(-ms / 40);
+  }
+  return ir;
+}
 
 export function createPiano(ctx, baseUrl = "piano/") {
   const buffers = new Map(); // sample midi -> Promise<AudioBuffer | null>
   const live = new Set();     // notes scheduled or sounding, so stopAll can silence them
   let generation = 0;         // bumped by stopAll so notes still loading never start
+  const output = roomFor(ctx);
 
   function sampleFor(midi) {
     return Math.max(LOW, Math.min(HIGH, Math.round(midi / 3) * 3));
@@ -37,10 +78,12 @@ export function createPiano(ctx, baseUrl = "piano/") {
     const buffer = await load(s);
     if (gen !== generation) return;
     const out = ctx.createGain();
-    out.connect(ctx.destination);
-    const release = 0.25;
-    out.gain.setValueAtTime(volume, when);
-    out.gain.setValueAtTime(volume, when + duration);
+    out.connect(output);
+    const release = 0.45; // the damper settling, not a hard cut
+    // A touch of human variation in how hard each key is played
+    const v = volume * (0.92 + Math.random() * 0.08);
+    out.gain.setValueAtTime(v, when);
+    out.gain.setValueAtTime(v, when + duration);
     out.gain.exponentialRampToValueAtTime(0.001, when + duration + release);
 
     if (buffer) {
@@ -65,6 +108,11 @@ export function createPiano(ctx, baseUrl = "piano/") {
     }
   }
 
+  // A soft rolled chord, like a coach setting the key
+  function chord(midis, when = ctx.currentTime, duration = 1.6, volume = 0.5) {
+    midis.forEach((m, i) => play(m, when + i * 0.06, duration - i * 0.06, volume));
+  }
+
   function track(node, out) {
     const note = { node, out };
     live.add(note);
@@ -84,5 +132,5 @@ export function createPiano(ctx, baseUrl = "piano/") {
     live.clear();
   }
 
-  return { play, preload, stopAll };
+  return { play, chord, preload, stopAll };
 }

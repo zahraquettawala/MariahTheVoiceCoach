@@ -1,26 +1,36 @@
-# MariahTheVoiceCoach
-AI voice coach for singers: daily agility warmups, real-time pitch scoring, and an ElevenLabs voice agent as your teacher.
+# Lento
+
+Lento is a vocal coach for singers who want to keep up their music without driving to lessons, paying a lot, or finding the time. Lento is the musical marking for "slow," and she's a sloth: a reminder to slow down and make time for the art you love.
+
+You open the app, meet Lento, and get a 15-20 minute vocal lesson: warm-ups, scales, a few sections of the song you're practicing, and a cooldown. Lento sings each exercise first, then plays piano while you sing, listens to your pitch, and moves up a half step on her own.
 
 ## Try it
 
-Open **https://zahraquettawala.github.io/MariahTheVoiceCoach/** on your phone in Safari, tap **Start**, allow the microphone, and sing.
+Open **https://zahraquettawala.github.io/MariahTheVoiceCoach/** on your phone in Safari, tap **Start your vocal lesson**, allow the microphone, and sing.
 
 ## What's in the app
 
-- **Welcome** (`welcome.html`): Mariah the Sloth introduces herself on your first visit.
-- **Today** (`index.html`): today's warmup, your streak, minutes this week, last accuracy, and the exercise list.
-- **Session** (`warmup.html`): four sing-along exercises modeled on the Aussie Vocal Coach "Daily Vocal Exercises for a POWERFUL Voice" video (fifths, more fifths, 5-note scale, fast runs). The piano gives the note and plays along, each loop moves up a half step then back down, and a live pitch lane shows the target notes and your voice, and a piano keyboard lights up each note as it plays. After each loop Mariah says whether you were on pitch, flat or sharp. Settings: lowest note, how far to climb, speed, spoken feedback.
-- **Tuner** (`tuner.html`): shows the note you're singing against a target note, with a flat / on pitch / sharp meter, a piano reference note, and a 6-second trace.
-- **Progress** (`progress.html`): accuracy over recent sessions, accuracy per exercise, and session history.
+- **Welcome** (`welcome.html`): Lento introduces herself on your first visit.
+- **Today** (`index.html`): start today's lesson, your song, your streak and accuracy, and a list of single exercises to practice.
+- **Lesson** (`lesson.html`): a quick check-in ("How's your voice feeling today?") and today's plan, then one full-screen lesson:
+  - **Warm-up, Scales, Song, Cooldown.** The exercises change from lesson to lesson, and the plan adapts to how you feel: tired means gentle warm-ups and a smaller range; ready to sing means a wider range and fast runs.
+  - **Every exercise:** Lento sings the pattern once ("me-me-ma-ma-moo"), then it's your turn with just the piano. Each loop moves a half step on its own; nothing to tap.
+  - **Live coaching:** if a phrase is flat, sharp or breathy, Lento stops, says what happened, and sings it again with you (up to two more tries) before moving on. Switch it off in settings with "Stop and fix mistakes."
+  - **Your song:** Lento gives you the starting note for each section. If you typed the melody, she sings it first and scores each note.
+- **Your song** (`song.html`): the song you're practicing, with up to 3 sections, a starting note each, and an optional melody.
+- **Tuner** (`tuner.html`): the note you're singing against a target note, with a flat / on pitch / sharp meter.
+- **Progress** (`progress.html`): accuracy over recent lessons, accuracy per exercise, and history.
 
 Wear wired earbuds so the mic hears you, not the piano. Within 25 cents of the target counts as on pitch, so vibrato isn't penalized.
 
 ## Code
 
-`exercises.js` defines the workout, `store.js` saves sessions on the phone (localStorage), `piano.js` plays the sampled piano, `sloth.js` draws Mariah, `ui.js` is the tab bar, `voice.js` is her speaking voice (the phone's built-in one for now), `keys.js` draws the keyboard, and `theme.css` is the design system. No build step.
+`exercises.js` is the exercise library, `lesson.js` builds each day's lesson, `song.js` stores your song, `store.js` saves lessons on the phone (localStorage), `piano.js` plays the grand piano, `sing.js` is Lento's singing voice for demos, `voice.js` is her speaking voice (the phone's built-in one for now), `sloth.js` draws her, `keys.js` draws the keyboard, `ui.js` is the tab bar, and `theme.css` is the design system. No build step. `warmup.html` redirects old links to the lesson.
 
-Pitch detection runs in the browser with [Pitchy](https://github.com/ianprime0509/pitchy). Piano samples are from [tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments) (MIT). Nothing is recorded; practice history stays on your phone.
+Pitch detection runs in the browser with [Pitchy](https://github.com/ianprime0509/pitchy). The piano is the [Salamander Grand Piano](https://archive.org/details/SalamanderGrandPianoV3) (a Yamaha C5, CC-BY 3.0, Alexander Holm), via [Tone.js audio](https://github.com/Tonejs/audio). Nothing is recorded; practice history stays on your phone.
+
+Design notes and the redesign plan are in [docs/lento-redesign.md](docs/lento-redesign.md).
 
 ## Next
 
-Mariah as a real ElevenLabs voice agent who talks you through the session.
+Lento as a real ElevenLabs voice agent: a live coach you can talk back to, who runs the talking parts of the lesson while the app keeps doing the piano and pitch work.

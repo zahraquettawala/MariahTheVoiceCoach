@@ -1,4 +1,4 @@
-// Mariah's speaking voice, for now the phone's built-in one. This is the one place
+// Lento's speaking voice, for now the phone's built-in one. This is the one place
 // to swap in an ElevenLabs voice later.
 
 // Nicest iPhone and Mac voices first. "Enhanced" and "Premium" ones sound the most natural,
@@ -33,6 +33,22 @@ export function speak(text) {
   u.rate = 0.96;   // a touch slower than default reads warmer
   u.pitch = 1.08;
   speechSynthesis.speak(u);
+}
+
+// Speak and wait until she's done (or about as long as the line takes, if the phone
+// never says it finished)
+export function speakAndWait(text) {
+  if (!supported) return Promise.resolve();
+  return new Promise((resolve) => {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if (chosen) u.voice = chosen;
+    u.rate = 0.96;
+    u.pitch = 1.08;
+    const fallback = setTimeout(resolve, 1200 + text.length * 75);
+    u.onend = u.onerror = () => { clearTimeout(fallback); resolve(); };
+    speechSynthesis.speak(u);
+  });
 }
 
 export function hush() {

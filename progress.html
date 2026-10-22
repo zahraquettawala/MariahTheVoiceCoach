@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Mariah the Sloth">
+<meta name="apple-mobile-web-app-title" content="Lento">
 <meta name="theme-color" content="#f7f3ef">
-<title>Progress · Mariah the Sloth</title>
+<title>Progress · Lento</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -37,14 +37,14 @@
   <section class="stats">
     <div class="card stat"><div class="v" id="sStreak">0</div><div class="l">Day streak</div></div>
     <div class="card stat"><div class="v" id="sWeek">0<small>min</small></div><div class="l">This week</div></div>
-    <div class="card stat"><div class="v" id="sCount">0</div><div class="l">Sessions</div></div>
+    <div class="card stat"><div class="v" id="sCount">0</div><div class="l">Lessons</div></div>
   </section>
 
   <section class="card empty" id="empty" hidden>
     <div class="art" data-sloth="sleepy"></div>
-    <h2>No sessions yet</h2>
-    <p class="sub">Finish a warmup and your accuracy shows up here, so you can watch it climb.</p>
-    <a class="btn accent" href="warmup.html?start=all">Start a session</a>
+    <h2>No lessons yet</h2>
+    <p class="sub">Finish a vocal lesson and your accuracy shows up here, so you can watch it climb.</p>
+    <a class="btn accent" href="lesson.html">Start your vocal lesson</a>
   </section>
 
   <div id="filled" style="display:contents" hidden>
@@ -92,10 +92,12 @@
     $("avg").innerHTML = `${Math.round(accs.reduce((a, b) => a + b, 0) / accs.length)}<small>% avg</small>`;
     drawChart(accs);
 
-    $("byEx").innerHTML = EXERCISES.map((ex, i) => {
+    // Only the exercises you've actually done, in library order
+    $("byEx").innerHTML = EXERCISES.map((ex) => {
       let hits = 0, total = 0;
       for (const sess of all) for (const e of sess.exercises) if (e.id === ex.id) { hits += e.hits; total += e.total; }
-      const pct = total ? Math.round((hits / total) * 100) : null;
+      return { ex, pct: total ? Math.round((hits / total) * 100) : null };
+    }).filter(({ pct }) => pct !== null).map(({ ex, pct }, i) => {
       return `<div class="row">
         <span class="badge">${i + 1}</span>
         <span class="grow"><div class="title">${ex.name}</div>

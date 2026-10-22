@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Mariah the Sloth">
+<meta name="apple-mobile-web-app-title" content="Lento">
 <meta name="theme-color" content="#f7f3ef">
-<title>Mariah the Sloth · Vocal Coach</title>
+<title>Lento · Vocal coach</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -34,7 +34,7 @@
 <body>
 <main class="app">
   <div class="top">
-    <span class="brand">Mariah the Sloth <span class="tag">Vocal coach</span></span>
+    <span class="brand">Lento <span class="tag">Vocal coach</span></span>
     <span class="pill" id="streakPill" hidden></span>
   </div>
 
@@ -46,19 +46,19 @@
   <a class="card meet" href="welcome.html">
     <div class="avatar"><div data-sloth="happy" data-pose="head"></div></div>
     <div class="grow">
-      <div class="name">Mariah the Sloth</div>
+      <div class="name">Lento</div>
       <div class="role">Your vocal coach</div>
-      <p class="line">“Hi! I'll play along on piano and tell you after every loop if you're on pitch. Ready to train your voice?”</p>
+      <p class="line" id="hiLine">“Hi! Slow down with me for a few minutes. I'll sing each exercise first, then play piano while you sing.”</p>
     </div>
   </a>
 
   <section class="card hero">
     <div class="art" data-sloth="happy"></div>
     <div class="copy">
-      <span class="eyebrow">Today's training</span>
-      <span class="h2">Voice training with Mariah</span>
-      <span class="sub" id="heroMeta">4 exercises</span>
-      <a class="btn accent" href="warmup.html?start=all">Start session</a>
+      <span class="eyebrow">Today's lesson</span>
+      <span class="h2">Your vocal lesson with Lento</span>
+      <span class="sub" id="heroMeta">Warm-up, scales, your song, cooldown</span>
+      <a class="btn accent" href="lesson.html">Start your vocal lesson</a>
     </div>
   </section>
 
@@ -69,7 +69,12 @@
   </section>
 
   <section class="section">
-    <div class="section-head"><h2>Exercises</h2><a href="warmup.html">Customize</a></div>
+    <div class="section-head"><h2>Your song</h2><a href="song.html" id="songEdit">Add</a></div>
+    <a class="list" href="song.html" id="songCard"></a>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>Practice one exercise</h2><button class="sub" id="moreEx" style="font-weight:600;color:var(--accent-ink)">Show all</button></div>
     <div class="list" id="exList"></div>
   </section>
 
@@ -85,38 +90,54 @@
   </section>
 
   <p class="hint">🎧 <b>Wired earbuds recommended.</b> The piano plays along with you, and earbuds keep the mic hearing only your voice. Nothing is recorded; your progress stays on this phone.</p>
+  <p class="hint">Lento is the musical marking for “slow.” She's here to remind you to slow down and make time for singing.</p>
 </main>
 
 <script type="module">
   import { EXERCISES, minutesFor, settings } from "./exercises.js";
+  import { buildLesson } from "./lesson.js";
+  import { loadSong } from "./song.js";
   import { stats } from "./store.js";
   import { drawSloths } from "./sloth.js";
   import { tabbar, greeting } from "./ui.js";
 
-  // First visit: Mariah introduces herself
+  // First visit: Lento introduces herself (once more for anyone who met her as Mariah)
   let met = true;
-  try { met = localStorage.getItem("mariahMet") === "1"; } catch {}
+  try { met = localStorage.getItem("lentoMet") === "1"; } catch {}
   if (!met) location.replace("welcome.html");
 
   const $ = (id) => document.getElementById(id);
   $("greet").textContent = greeting();
   $("date").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
 
-  const total = EXERCISES.reduce((n, ex) => n + minutesFor(ex, settings.climb, settings.speed), 0);
-  $("heroMeta").textContent = `${EXERCISES.length} exercises · about ${Math.round(total)} min`;
+  const song = loadSong();
+  const lesson = buildLesson({ song });
+  $("heroMeta").textContent = `Warm-up, scales, ${song ? "your song" : "a song"}, cooldown · about ${lesson.minutes} min`;
 
-  $("exList").innerHTML = EXERCISES.map((ex, i) => `
-    <a class="row" href="warmup.html?start=${i}">
-      <span class="badge">${i + 1}</span>
-      <span class="grow"><div class="title">${ex.name}</div><div class="meta">“${ex.sound}” · ${ex.desc}</div></span>
+  $("songEdit").textContent = song ? "Edit" : "Add";
+  $("songCard").innerHTML = song
+    ? `<span class="row"><span class="badge">♪</span><span class="grow"><div class="title">${esc(song.title)}</div><div class="meta">${song.sections.map((s) => esc(s.name)).join(" · ")}</div></span><span class="chev">›</span></span>`
+    : `<span class="row"><span class="badge">♪</span><span class="grow"><div class="title">Add a song you're practicing</div><div class="meta">Lento gives you the starting note and works through it with you</div></span><span class="chev">›</span></span>`;
+
+  const KINDS = { warmup: "Warm-up", scale: "Scale", cooldown: "Cooldown" };
+  const showEx = (all) => {
+    $("exList").innerHTML = EXERCISES.slice(0, all ? undefined : 4).map((ex) => `
+    <a class="row" href="lesson.html?only=${ex.id}">
+      <span class="grow"><div class="title">${ex.name}</div><div class="meta">${KINDS[ex.kind]} · “${ex.sound}” · ${ex.desc}</div></span>
       <span class="meta">${Math.max(1, Math.round(minutesFor(ex, settings.climb, settings.speed)))} min</span>
     </a>`).join("");
+    $("moreEx").hidden = all;
+  };
+  showEx(false);
+  $("moreEx").onclick = () => showEx(true);
 
   const s = stats();
   $("sStreak").textContent = s.streak;
   $("sWeek").innerHTML = `${s.weekMinutes}<small>min</small>`;
   $("sAcc").innerHTML = s.lastAccuracy === null ? "–" : `${s.lastAccuracy}<small>%</small>`;
   if (s.streak > 1) { $("streakPill").hidden = false; $("streakPill").textContent = `🔥 ${s.streak} days`; }
+
+  function esc(t) { return String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]); }
 
   drawSloths();
   tabbar("today");

@@ -1,11 +1,20 @@
 // Practice history, saved only on this phone.
-// A session: { at: ISO time, minutes, exercises: [{ id, name, hits, total }] }
+// A session: { at: ISO time, minutes, mood?, exercises: [{ id, name, hits, total }] }
 
-const KEY = "mariahSessions";
+const KEY = "lentoSessions";
+const OLD_KEY = "mariahSessions"; // from before the app was renamed Lento
 
 export function sessions() {
-  try { return JSON.parse(localStorage.getItem(KEY)) ?? []; } catch { return []; }
+  try {
+    if (localStorage.getItem(KEY) === null && localStorage.getItem(OLD_KEY) !== null) {
+      localStorage.setItem(KEY, localStorage.getItem(OLD_KEY));
+      localStorage.removeItem(OLD_KEY);
+    }
+    return JSON.parse(localStorage.getItem(KEY)) ?? [];
+  } catch { return []; }
 }
+
+export const lastSession = () => sessions().at(-1) ?? null;
 
 export function saveSession(session) {
   const all = sessions();

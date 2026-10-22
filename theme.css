@@ -1,4 +1,4 @@
-/* Mariah design system: warm linen, deep ink, muted rose. */
+/* Lento design system: warm linen, deep ink, muted rose. */
 :root {
   --bg: #f7f3ef;
   --surface: #ffffff;
@@ -78,7 +78,7 @@ h2, .h2 { font-family: var(--serif); font-weight: 500; font-size: 20px; margin: 
 .tabbar a svg { width: 22px; height: 22px; }
 .tabbar a.on { color: var(--accent-ink); }
 
-/* Coach line: Mariah's avatar and what she says */
+/* Coach line: Lento's avatar and what she says */
 .coach { display: flex; align-items: center; gap: 12px; }
 .coach .avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--accent-soft); overflow: hidden; flex: none; display: grid; place-items: center; }
 .coach .avatar > div { width: 40px; height: 40px; margin-top: 4px; }

@@ -1,4 +1,4 @@
-// Mariah the sloth, drawn as inline SVG so she can change mood.
+// Lento the sloth, drawn as inline SVG so she can change mood.
 // mood: "happy" (default), "sing", "proud", "oops", "sleepy"
 // pose: "hang" (full body on a branch, default) or "head". Both come with her microphone.
 
