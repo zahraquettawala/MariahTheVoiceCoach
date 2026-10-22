@@ -6,7 +6,7 @@ You open the app, meet Lento, and get a 15-20 minute vocal lesson: warm-ups, sca
 
 ## Try it
 
-Open **https://zahraquettawala.github.io/MariahTheVoiceCoach/** on your phone in Safari, tap **Start your vocal lesson**, allow the microphone, and sing.
+Open **https://zahraquettawala.github.io/lento-voice-coach/** on your phone in Safari, tap **Start your vocal lesson**, allow the microphone, and sing.
 
 ## What's in the app
 
