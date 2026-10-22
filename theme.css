@@ -1,7 +1,7 @@
 /* Lento design system. Three looks, picked with data-theme on <html>:
-   night (default): a late-night practice room, deep plum with warm gold.
-   studio: warm rose and peach. forest: soft greens and cream. */
-:root, [data-theme="night"] {
+   studio (default): warm rose and peach. night: a late-night practice room,
+   deep plum with warm gold. forest: soft greens and cream. */
+[data-theme="night"] {
   --bg: #151022;
   --bg-glow: radial-gradient(120% 55% at 50% 0%, #2d2047 0%, #151022 65%);
   --surface: #211a33;
@@ -27,7 +27,7 @@
   --shadow: 0 10px 30px rgba(0, 0, 0, .35);
   color-scheme: dark;
 }
-[data-theme="studio"] {
+:root, [data-theme="studio"] {
   --bg: #fbf4ee;
   --bg-glow: linear-gradient(180deg, #fde7e4 0%, #fbf4ee 55%);
   --surface: #ffffff;
@@ -200,3 +200,57 @@ a.row:active, button.row:active, a.card:active { transform: scale(.985); }
 .steps i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); transition: background .3s; }
 .steps i.on { background: var(--accent); }
 .fade-in { animation: page-in .35s cubic-bezier(.2, .8, .2, 1) both; }
+
+/* Yellow looks */
+[data-theme="sunny"] {
+  --bg: #fff8e1;
+  --bg-glow: linear-gradient(180deg, #ffefb0 0%, #fff8e1 55%);
+  --surface: #ffffff;
+  --surface-2: #fffcf0;
+  --ink: #33270f;
+  --ink-2: #6f5d3a;
+  --ink-3: #ab9b78;
+  --line: #f3e6bf;
+  --accent: #f0a500;
+  --accent-ink: #b57400;
+  --accent-soft: #ffefc2;
+  --ok: #3a9d6a;
+  --ok-soft: #dcf2e4;
+  --low: #e07b2e;
+  --low-soft: #fbe5d2;
+  --high: #d9534f;
+  --high-soft: #f9dedd;
+  --bar: rgba(255, 252, 240, .94);
+  --cta: linear-gradient(135deg, #ffd54a, #ffad1f);
+  --cta-ink: #33270f;
+  --cta-shadow: 0 8px 20px rgba(240, 165, 0, .35);
+  --halo: radial-gradient(closest-side, rgba(255, 213, 74, .55), transparent);
+  --shadow: 0 2px 4px rgba(120, 90, 20, .05), 0 12px 30px rgba(240, 165, 0, .12);
+  color-scheme: light;
+}
+[data-theme="lemon"] {
+  --bg: #fffbe8;
+  --bg-glow: linear-gradient(180deg, #fff3a8 0%, #fffbe8 50%);
+  --surface: #ffffff;
+  --surface-2: #fffdf3;
+  --ink: #1f1b12;
+  --ink-2: #5d5544;
+  --ink-3: #a29a84;
+  --line: #efe8c8;
+  --accent: #e6b800;
+  --accent-ink: #8f7200;
+  --accent-soft: #fff4b8;
+  --ok: #2f9e6e;
+  --ok-soft: #d8f2e5;
+  --low: #e0832e;
+  --low-soft: #fbe7d3;
+  --high: #d4504d;
+  --high-soft: #f8dcdb;
+  --bar: rgba(255, 253, 243, .95);
+  --cta: #ffd23f;
+  --cta-ink: #1f1b12;
+  --cta-shadow: 0 5px 0 #d9a800;
+  --halo: radial-gradient(closest-side, rgba(255, 228, 92, .6), transparent);
+  --shadow: 0 3px 0 rgba(31, 27, 18, .05), 0 10px 26px rgba(214, 170, 0, .10);
+  color-scheme: light;
+}

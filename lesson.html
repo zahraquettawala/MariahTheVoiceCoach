@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script>try{document.documentElement.dataset.theme=localStorage.getItem("lentoTheme")||"night"}catch(e){}</script>
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("lentoTheme")||"studio"}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Lento">
-<meta name="theme-color" content="#151022">
+<meta name="theme-color" content="#fbf4ee">
 <title>Vocal lesson · Lento</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
 <link rel="icon" href="sloth.svg">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
   /* Check-in: one question per screen */
   #checkin { min-height: 100svh; max-width: 460px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top)) 22px calc(24px + env(safe-area-inset-bottom)); }
@@ -30,7 +30,7 @@
   .plan .sec { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); width: 74px; flex: none; }
   .plan .row .title { font-size: 14.5px; }
   .plan .row a { color: var(--accent-ink); font-weight: 600; }
-  .themes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 6px 0 14px; }
+  .themes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 6px 0 14px; }
   .themes button { padding: 10px 4px; border-radius: 14px; border: 2px solid var(--line); font-size: 13px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 6px; }
   .themes button i { width: 34px; height: 22px; border-radius: 8px; }
   .themes button[aria-pressed="true"] { border-color: var(--accent); }
@@ -775,7 +775,7 @@
   $("showSum").onclick = () => { $("sumList").hidden = false; $("showSum").hidden = true; };
 
   // The look of the app
-  const THEMES = { night: ["Night", "#151022", "#f2b45a"], studio: ["Studio", "#fbf4ee", "#d9577a"], forest: ["Forest", "#f3f1e4", "#3f8f63"] };
+  const THEMES = { sunny: ["Sunny", "#fff8e1", "#ffad1f"], lemon: ["Lemon", "#fffbe8", "#ffd23f"], studio: ["Studio", "#fbf4ee", "#d9577a"], night: ["Night", "#151022", "#f2b45a"], forest: ["Forest", "#f3f1e4", "#3f8f63"] };
   function renderThemes() {
     const cur = document.documentElement.dataset.theme;
     $("themes").innerHTML = Object.entries(THEMES).map(([id, [name, bg, acc]]) =>
